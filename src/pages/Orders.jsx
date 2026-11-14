@@ -42,7 +42,7 @@ export default function Orders() {
       {sorted.length === 0 && <p className="mut">No orders yet</p>}
       <div className="hist">
         {sorted.map((o, i) => (
-          <motion.div layout key={o.id} className="raised hrow" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 10) * 0.03 }}>
+          <motion.div key={o.id} className="raised hrow" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 10) * 0.03 }}>
             <button className="hhead" onClick={() => setOpen(open === o.id ? null : o.id)}>
               <div><b>{ono(o.no)}</b><small>{new Date(o.date).toLocaleString()}</small></div>
               <div className="hright"><b>{fmt(o.total, cur)}</b><small>{MLABEL[o.method]}</small></div>

@@ -34,16 +34,14 @@ export default function App() {
   return (
     <>
       <header className="top">
-        <button className="btn burger" onClick={() => setOpen(true)} aria-label="Menu">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-        </button>
-        <h1>{NAV.find((n) => n[0] === page)[1]}</h1>
-        {inst && <button className="btn" onClick={install}>Install</button>}
-        <span className={'net' + (online ? '' : ' off')}>{online ? 'Online' : 'Offline'}</span>
         <div className="brand">
           {settings.logo && <img src={settings.logo} alt="" />}
           <b>{settings.name}</b>
         </div>
+        {inst && <button className="btn" onClick={install}>Install</button>}
+        <button className="btn burger" onClick={() => setOpen(true)} aria-label="Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
       </header>
       <AnimatePresence>
         {open && (<>

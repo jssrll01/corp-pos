@@ -2,6 +2,7 @@ import { useState, useMemo, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useStore, setState, getState } from '../store.js'
 import { clearCart, fmt } from '../cart.js'
+import { expected, setKey } from '../license.js'
 let unlocked = false
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
 const readImg = (file, max, type) => new Promise((res) => {
@@ -88,7 +89,7 @@ function Products() {
       {products.length === 0 && <p className="mut">No products yet</p>}
       <AnimatePresence initial={false}>
         {products.map((p) => (
-          <motion.div layout key={p.id} className="raised prow" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -30 }}>
+          <motion.div key={p.id} className="raised prow" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -30 }}>
             <div className="pimg inset sm">{p.image ? <img src={p.image} alt="" /> : <span>{p.name.slice(0, 1).toUpperCase()}</span>}</div>
             <div className="pinfo"><b>{p.name}</b><small>{fmt(p.price, cur)}{p.barcode ? ' · ' + p.barcode : ''}{p.stock != null && p.stock !== '' ? ' · stock ' + p.stock : ''}</small></div>
             <button className="btn" onClick={() => { setF({ id: p.id, name: p.name, price: String(p.price), barcode: p.barcode || '', image: p.image || '', stock: p.stock == null ? '' : String(p.stock) }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>Edit</button>
@@ -102,6 +103,7 @@ function Products() {
 function Settings() {
   const { settings } = useStore()
   const [d, setD] = useState({ address: '', phone: '', footer: '', ...settings, tax: String(settings.tax) })
+  const [key, setKeyV] = useState(expected())
   const [msg, setMsg] = useState('')
   const set = (k, v) => { setD((x) => ({ ...x, [k]: v })); setMsg('') }
   const logo = async (e) => { const file = e.target.files[0]; if (!file) return; const r = await readImg(file, 200, 'image/png'); if (r) set('logo', r); e.target.value = '' }
@@ -111,8 +113,10 @@ function Settings() {
     if (!(tax >= 0 && tax <= 100)) return setMsg('Tax must be between 0 and 100')
     if (String(d.pin).length < 4) return setMsg('PIN must be at least 4 characters')
     if (!d.currency.trim()) return setMsg('Currency symbol is required')
+    const nk = key.trim().toUpperCase()
+    if (nk.length < 4) return setMsg('Activation key must be at least 4 characters')
     setState((s) => ({ settings: { ...s.settings, ...d, name: d.name.trim(), currency: d.currency.trim(), tax, pin: String(d.pin) } }))
-    setMsg('Saved')
+    setKey(nk); setMsg('Saved')
   }
   return (
     <div className="raised mpanel">
@@ -127,6 +131,7 @@ function Settings() {
         <label className="lbl">Tax %<input className="input" type="number" inputMode="decimal" value={d.tax} onChange={(e) => set('tax', e.target.value)} /></label>
       </div>
       <label className="lbl">Management PIN<input className="input" type="password" inputMode="numeric" value={d.pin} onChange={(e) => set('pin', e.target.value)} /></label>
+      <label className="lbl">Activation key (asked once when the app is first opened)<input className="input" value={key} onChange={(e) => { setKeyV(e.target.value); setMsg('') }} /></label>
       <label className="lbl">Store address (on receipt)<input className="input" value={d.address} onChange={(e) => set('address', e.target.value)} /></label>
       <label className="lbl">Phone (on receipt)<input className="input" value={d.phone} onChange={(e) => set('phone', e.target.value)} /></label>
       <label className="lbl">Receipt footer<input className="input" placeholder="Thank you! Come again." value={d.footer} onChange={(e) => set('footer', e.target.value)} /></label>

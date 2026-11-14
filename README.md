@@ -7,7 +7,7 @@ Offline-first point of sale. React + Vite, installable PWA, white neumorphic UI.
 - Orders: top sellers and history (newest first), reprint
 - Management (PIN): product CRUD with images and optional stock, settings, backup/restore JSON, CSV export, revenue graph
 - Works offline, data stays on the device (localStorage)
-- License activation per business name
+- Activation key screen on first open (default key, manager can set their own)
 
 ## Develop
     npm install
@@ -18,4 +18,4 @@ Offline-first point of sale. React + Vite, installable PWA, white neumorphic UI.
 Static host (Render Static Site, Netlify, Cloudflare Pages). Build command `npm run build`, publish directory `dist`. HTTPS is required for install and offline.
 
 ## Selling
-Issue a key per customer: `sh tools/newcustomer.sh "Business Name"`. Keys are logged to `~/pos-licenses.txt`. Changing the salt in `src/license.js` invalidates every issued key, so back it up. Keep this repo private.
+Default activation key is `1010-0707-1010-0707`. The manager can set their own key in Management > Settings > Activation key. The key is asked once per device on first open. Keep this repo private.

@@ -1,7 +1,7 @@
 # RestoPOS User Guide
 
 ## First time
-1. Open the app and enter your business name and activation key.
+1. Open the app and enter the activation key. The default key is 1010-0707-1010-0707. Change it in Management > Settings > Activation key.
 2. Menu (three lines, top left) > Management. Default PIN is 1234. Change it in Settings.
 3. Settings: display name, logo, currency, tax, receipt address, phone and footer.
 4. Products: add name, price, barcode, image, optional stock.

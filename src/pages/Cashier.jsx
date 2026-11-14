@@ -61,7 +61,7 @@ export default function Cashier() {
       ) : (
         <div className="pgrid">
           {list.map((p, i) => (
-            <motion.button key={p.id} layout initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: Math.min(i, 12) * 0.02 }} whileTap={{ scale: 0.95 }} className="pcard raised" onClick={() => add(p)}>
+            <motion.button key={p.id} initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: Math.min(i, 12) * 0.02 }} whileTap={{ scale: 0.95 }} className="pcard raised" onClick={() => add(p)}>
               <div className="pimg inset">{p.image ? <img src={p.image} alt="" /> : <span>{p.name.slice(0, 1).toUpperCase()}</span>}</div>
               <div className="pname">{p.name}</div>
               <div className="pprice">{fmt(p.price, cur)}</div>
@@ -81,7 +81,7 @@ export default function Cashier() {
             <div className="sheethd"><h2>Current Order</h2><button className="btn" onClick={() => setOpen(false)}>Close</button></div>
             {cart.items.length === 0 && <p className="mut">No items yet</p>}
             {cart.items.map((i) => (
-              <motion.div layout key={i.id} className="line inset" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+              <motion.div key={i.id} className="line inset" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                 <div className="lname"><b>{i.name}</b><small>{fmt(i.price, cur)} each</small></div>
                 <div className="qty"><button className="btn" onClick={() => setQty(i.id, i.qty - 1)}>-</button><span>{i.qty}</span><button className="btn" onClick={() => { const pr = products.find((x) => x.id === i.id); if (pr && pr.stock != null && pr.stock !== '' && i.qty >= pr.stock) return; setQty(i.id, i.qty + 1) }}>+</button></div>
                 <div className="ltot">{fmt(i.price * i.qty, cur)}</div>
