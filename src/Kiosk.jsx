@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-import Icon from './icons.jsx'
+import { useEffect } from 'react'
 const el = () => document.documentElement
 const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement) || (window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches)
 const lock = () => { try { const p = window.screen.orientation && window.screen.orientation.lock && window.screen.orientation.lock('landscape'); if (p && p.catch) p.catch(() => {}) } catch (e) {} }
@@ -10,31 +9,39 @@ const go = () => {
     if (r) { const p = r.call(el(), { navigationUI: 'hide' }); if (p && p.then) p.then(lock, () => {}) }
   } catch (e) {}
 }
+const fit = () => {
+  const r = document.getElementById('root')
+  if (!r) return
+  const w = window.innerWidth, h = window.innerHeight
+  document.documentElement.style.overflow = 'hidden'
+  document.body.style.overflow = 'hidden'
+  if (h > w) {
+    Object.assign(r.style, { position: 'fixed', top: '0', left: '0', width: h + 'px', height: w + 'px', transformOrigin: 'top left', transform: 'translateX(' + w + 'px) rotate(90deg)', overflow: 'hidden' })
+  } else {
+    Object.assign(r.style, { position: '', top: '', left: '', width: '', height: '', transformOrigin: '', transform: '', overflow: '' })
+  }
+}
 export default function Kiosk() {
-  const [portrait, setPortrait] = useState(window.matchMedia('(orientation: portrait)').matches)
   useEffect(() => {
-    const mq = window.matchMedia('(orientation: portrait)')
-    const o = () => setPortrait(mq.matches)
-    const f = () => { if (isFs()) lock() }
+    const f = () => { if (isFs()) lock(); fit() }
     const cm = (e) => e.preventDefault()
     document.addEventListener('click', go, true)
     document.addEventListener('touchend', go, true)
     document.addEventListener('fullscreenchange', f)
     document.addEventListener('webkitfullscreenchange', f)
     document.addEventListener('contextmenu', cm)
-    if (mq.addEventListener) mq.addEventListener('change', o); else mq.addListener(o)
-    lock()
+    window.addEventListener('resize', fit)
+    window.addEventListener('orientationchange', fit)
+    lock(); fit()
     return () => {
       document.removeEventListener('click', go, true)
       document.removeEventListener('touchend', go, true)
       document.removeEventListener('fullscreenchange', f)
       document.removeEventListener('webkitfullscreenchange', f)
       document.removeEventListener('contextmenu', cm)
-      if (mq.removeEventListener) mq.removeEventListener('change', o); else mq.removeListener(o)
+      window.removeEventListener('resize', fit)
+      window.removeEventListener('orientationchange', fit)
     }
   }, [])
-  if (portrait) return (
-    <div className="kiosk"><Icon n="rotate" s={54} /><h2 style={{ margin: 0 }}>Rotate your device</h2></div>
-  )
   return null
 }
