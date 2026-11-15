@@ -273,7 +273,7 @@ export function TableBoard({ close }) {
   return (
     <Sh t="Open tables and parked sales" close={close} w={520}>
       {st.parked.length === 0 && <small className="mut">No parked sales.</small>}
-      {st.parked.map((p) => <div key={p.id} className="raised prow"><div className="pinfo"><b>{p.label || (p.cart && p.cart.table) || 'Sale ' + p.no}</b><small>{(p.cart && p.cart.otype) || 'Dine-in'} · {(p.cart ? p.cart.items : []).length} lines · waiting {age(p.date)} · {p.by}</small></div><b>{money(sum(p.cart ? p.cart.items : [], (i) => num(i.qty) * num(i.price)))}</b></div>)}
+      {st.parked.map((p) => <div key={p.id} className="raised prow"><div className="pinfo"><b>{p.label || (p.cart && p.cart.table) || 'Sale ' + p.no}</b><small>{['Wholesale', 'Delivery'].includes(p.cart && p.cart.otype) ? p.cart.otype : 'Retail'} · {(p.cart ? p.cart.items : []).length} lines · waiting {age(p.date)} · {p.by}</small></div><b>{money(sum(p.cart ? p.cart.items : [], (i) => num(i.qty) * num(i.price)))}</b></div>)}
       <button className="btn pri" onClick={() => { window.dispatchEvent(new CustomEvent('pos-nav', { detail: 'hold' })); close() }}>Open Parked page to resume</button>
     </Sh>
   )
