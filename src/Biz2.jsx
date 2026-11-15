@@ -416,6 +416,8 @@ export function Prefs2({ close }) {
       <div className="seg">{[['compact', 'Compact'], ['cozy', 'Normal'], ['large', 'Large touch']].map(([k, l]) => <button key={k} className={'btn' + (pref('dens', 'cozy') === k ? ' on' : '')} onClick={() => set('dens', k)}>{l}</button>)}</div>
       <div className="seg">{PRESETS.map(([n, a, b]) => <button key={n} className={'btn' + (cur === a ? ' on' : '')} onClick={() => { setPref('ac', a); setPref('acs', b); applyPrefs(); f((x) => x + 1) }}><i className="ld" style={{ background: a }} />{n}</button>)}</div>
       <div className="seg">{[['s', 'Small cards'], ['m', 'Medium cards'], ['l', 'Large cards']].map(([k, l]) => <button key={k} className={'btn' + (pref('grid', 'm') === k ? ' on' : '')} onClick={() => set('grid', k)}>{l}</button>)}</div>
+      <button className="btn" onClick={() => set('hide0', pref('hide0', '0') === '1' ? '0' : '1')}>Hide out-of-stock on register: {pref('hide0', '0') === '1' ? 'on' : 'off'}</button>
+      <button className="btn" onClick={() => set('fs1', pref('fs1', '1') === '1' ? '0' : '1')}>Fullscreen landscape on first tap: {pref('fs1', '1') === '1' ? 'on' : 'off'}</button>
       <button className="btn" onClick={() => set('snd', pref('snd', '1') === '1' ? '0' : '1')}>Beep and vibrate: {pref('snd', '1') === '1' ? 'on' : 'off'}</button>
       <button className="btn" onClick={() => { const v = pref('wake', '1') === '1' ? '0' : '1'; set('wake', v); wakeLock(v === '1') }}>Keep screen on: {pref('wake', '1') === '1' ? 'on' : 'off'}</button>
       <label className="lbl">Daily sales goal<input className="input" type="number" inputMode="decimal" value={pref('goal', '')} onChange={(e) => set('goal', e.target.value)} /></label>

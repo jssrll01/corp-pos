@@ -7,7 +7,8 @@ import './corp2.css'
 import './corp3.css'
 import { applyPrefs, migrate } from './fx.js'
 import { Boundary } from './Biz2.jsx'
+import { Landscape } from './Biz4.jsx'
 applyPrefs()
 migrate()
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist() } catch (e) {}
-createRoot(document.getElementById('root')).render(<Boundary><App /></Boundary>)
+createRoot(document.getElementById('root')).render(<Boundary><App /><Landscape /></Boundary>)

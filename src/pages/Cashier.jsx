@@ -5,7 +5,8 @@ import { useCart, setCart, clearCart, addItem, setQty, METHODS, ono } from '../c
 import { uid, num, r2, money, qtyAt, reserved, take, mvRow, curUser, calcSale, priceFor, tracked, isLow, audit } from '../inv.js'
 import { PrintBtns, Modal } from '../ui.jsx'
 import { useX, setX } from '../xstore.js'
-import { beep, pref, setPref, nextOrderNo, toast, receiptText, shareText, kitchenTicket } from '../fx.js'
+import { beep, pref, setPref, nextOrderNo, toast, receiptText, shareText } from '../fx.js'
+import { quoteDoc } from '../Biz4.jsx'
 import Scanner from './Scanner.jsx'
 import Icon from '../icons.jsx'
 import Ic from '../icons2.jsx'
@@ -39,7 +40,7 @@ export default function Cashier() {
   const earn = L.on && cust ? Math.floor((t.paidNow + t.dep) / (num(L.per) || 100)) : 0
   const lowN = products.filter((p) => isLow(p, st)).length
   const nextNo = nextOrderNo()
-  const otype = cart.otype || 'Dine-in'
+  const otype = ['Retail', 'Wholesale', 'Delivery'].includes(cart.otype) ? cart.otype : 'Retail'
   const inCart = (id) => (cart.items.find((i) => i.id === id) || {}).qty || 0
   const av = (p) => qtyAt(p, wh) - reserved(st, p.id, wh)
   const addN = (p, n) => {
@@ -54,6 +55,7 @@ export default function Cashier() {
   const add = (p) => addN(p, 1)
   const plus = (i) => { const p = products.find((z) => z.id === i.id); if (p && tracked(p) && i.qty >= av(p)) return; setQty(i.id, i.qty + 1) }
   const setLevel = (l) => setCart((s) => ({ level: l, items: s.items.map((i) => { const p = products.find((z) => z.id === i.id); return p ? { ...i, price: priceFor(p, l) } : i }) }))
+  const pickType = (k) => { setCart({ otype: k }); if (k === 'Wholesale') { const l = levels.find((z) => /whole/i.test(z.name)); if (l) setLevel(l.id) } else if (k === 'Retail') setLevel('retail') }
   const pickCust = (id) => { const c = customers.find((z) => z.id === id); setCart({ customer: id, redeem: '', partial: false }); if (c && c.level) setLevel(c.level) }
   const togFav = (id) => setX((s) => ({ fav: (s.fav || []).includes(id) ? (s.fav || []).filter((i) => i !== id) : [...(s.fav || []), id] }))
   const cnt = useMemo(() => { const m = {}; st.orders.forEach((o) => o.items.forEach((i) => { m[i.id] = (m[i.id] || 0) + i.qty })); return m }, [st.orders])
@@ -61,7 +63,7 @@ export default function Cashier() {
   const cats = useMemo(() => [...new Set(products.map((p) => p.cat).filter(Boolean))], [products])
   const list = useMemo(() => {
     const s = q.trim().toLowerCase()
-    let base = products
+    let base = pref('hide0', '0') === '1' ? products.filter((p) => !tracked(p) || av(p) > 0) : products
     if (cf === '*fav') base = base.filter((p) => fav.includes(p.id))
     else if (cf === '*freq') base = base.filter((p) => freqIds.includes(p.id))
     else if (cf) base = base.filter((p) => p.cat === cf)
@@ -70,7 +72,7 @@ export default function Cashier() {
     else if (sort === 'price') out = [...out].sort((a, b) => num(a.price) - num(b.price))
     else if (sort === 'best') out = [...out].sort((a, b) => (cnt[b.id] || 0) - (cnt[a.id] || 0))
     return out
-  }, [q, products, cf, freqIds, fav, sort, cnt])
+  }, [q, products, cf, freqIds, fav, sort, cnt, pref('hide0', '0')])
   const byCode = (s) => products.find((p) => String(p.barcode || '').toLowerCase() === s || String(p.sku || '').toLowerCase() === s)
   const onKey = (e) => {
     if (e.key !== 'Enter') return
@@ -84,7 +86,9 @@ export default function Cashier() {
     if (hit) { addN(hit, n); setQ('') } else toast('No single product matches', 'bad')
   }
   const short = !t.full && !cart.partial
-  const canPay = cart.items.length > 0 && (t.balance === 0 || (cart.partial && !!cust))
+  const lim = num((x.climit || {})[cart.customer])
+  const overLim = !!cust && lim > 0 && cart.partial && t.balance > 0 && owed + t.balance > lim
+  const canPay = cart.items.length > 0 && (t.balance === 0 || (cart.partial && !!cust)) && !overLim
   const park = () => {
     if (!cart.items.length) return
     const label = window.prompt('Label for this parked sale (optional)', cust ? cust.name : cart.table || '')
@@ -215,14 +219,15 @@ export default function Cashier() {
       <aside className="reg-r raised">
         <div className="ordhd"><b>Order {ono(nextNo)}</b><span className="mut">{t.count} items</span></div>
         <div className="ordscroll">
-          <div className="seg otype">{['Dine-in', 'Takeout', 'Delivery'].map((k) => <button key={k} className={'btn' + (otype === k ? ' on' : '')} onClick={() => setCart({ otype: k })}>{k}</button>)}</div>
-          <input className="input" placeholder={otype === 'Dine-in' ? 'Table no.' : otype === 'Delivery' ? 'Address / contact' : 'Name / reference'} value={cart.table || ''} onChange={(e) => setCart({ table: e.target.value })} />
+          <div className="seg otype">{['Retail', 'Wholesale', 'Delivery'].map((k) => <button key={k} className={'btn' + (otype === k ? ' on' : '')} onClick={() => pickType(k)}>{k}</button>)}</div>
+          <input className="input" placeholder={otype === 'Delivery' ? 'Address / contact' : otype === 'Wholesale' ? 'PO / reference no.' : 'Reference (optional)'} value={cart.table || ''} onChange={(e) => setCart({ table: e.target.value })} />
           <Sel className="input" value={cart.level} onChange={(e) => setLevel(e.target.value)}><option value="retail">Retail</option>{levels.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}</Sel>
           <div className="row2" style={{ flexWrap: 'nowrap' }}>
             <Sel className="input" value={cart.customer} onChange={(e) => pickCust(e.target.value)}><option value="">Walk-in</option>{customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</Sel>
             <button className="btn" style={{ flex: 'none', minWidth: 0 }} onClick={() => setNc({ name: '', phone: '' })} aria-label="New customer">+</button>
           </div>
           {cust && <small className="mut">{L.on ? (cust.points || 0) + ' pts · ' : ''}{owed > 0 ? 'Owes ' + money(owed) : 'No balance owed'}</small>}
+          {cust && lim > 0 && <small style={{ color: overLim ? '#ef4444' : undefined, fontWeight: overLim ? 700 : 400 }}>Credit limit {money(lim)}{overLim ? ' · exceeded, cannot add more credit' : ''}</small>}
           {t.lines.length === 0 && <p className="mut">Tap a product to add it</p>}
           {t.lines.map((i) => (
             <div key={i.id} className="line inset">
@@ -236,6 +241,7 @@ export default function Cashier() {
             <Sel className="input" value={cart.dtype} onChange={(e) => setCart({ dtype: e.target.value })}><option value="%">Discount %</option><option value="fix">Discount {settings.currency}</option></Sel>
             <input className="input" type="number" inputMode="decimal" min="0" placeholder="0" value={cart.dval} onChange={(e) => setCart({ dval: e.target.value })} />
           </div>
+          <div className="cc">{[['5%', 5], ['10%', 10], ['Senior/PWD 20%', 20]].map(([l, v]) => <button key={l} className="btn" onClick={() => setCart({ dtype: '%', dval: String(v) })}>{l}</button>)}<button className="btn" onClick={() => setCart({ dtype: '%', dval: '' })}>None</button></div>
           {L.on && cust && <div className="row2"><small className="mut">{cust.points || 0} points</small><input className="input" type="number" inputMode="numeric" min="0" placeholder="Redeem points" value={cart.redeem} onChange={(e) => setCart({ redeem: e.target.value })} /></div>}
           <div className="seg">{METHODS.map(([k, l]) => <button key={k} className={'btn' + (cart.method === k ? ' on' : '')} onClick={() => setCart({ method: k })}>{l}</button>)}</div>
           <input className="input" type="number" inputMode="decimal" min="0" placeholder={cart.method === 'cash' ? 'Cash received' : 'Amount paid (blank = full)'} value={cart.received} onChange={(e) => setCart({ received: e.target.value })} />
@@ -258,7 +264,7 @@ export default function Cashier() {
             <button className="btn bad" onClick={clearCart} title="F9">Clear</button>
             <button className="btn" onClick={park} disabled={!cart.items.length} title="F8">Park</button>
             <button className="btn" disabled={!cart.items.length} onClick={() => setRv({ pickup: '', dep: '', name: '', phone: '' })}>Reserve</button>
-            <button className="btn" disabled={!cart.items.length} onClick={() => kitchenTicket(cart, nextNo)}>Kitchen</button>
+            <button className="btn" disabled={!cart.items.length} onClick={() => quoteDoc(t, cart, cust, nextNo)}>Quote</button>
           </div>
           <button className="btn pri" style={{ height: 44, fontSize: 16 }} disabled={!canPay} onClick={complete} title="F4">Complete Sale (F4)</button>
         </div>

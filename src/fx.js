@@ -211,10 +211,6 @@ export const shareText = async (t) => {
   try { if (navigator.share) { await navigator.share({ text: t }); return } } catch (e) { return }
   try { await navigator.clipboard.writeText(t); toast('Receipt copied', 'ok') } catch (e) { toast('Could not copy', 'bad') }
 }
-export const kitchenTicket = (cart, no) => {
-  const rows = cart.items.map((i) => '<div class="b">' + i.qty + ' x ' + esc(i.name) + '</div>' + (i.note ? '<div>&nbsp;&nbsp;* ' + esc(i.note) + '</div>' : '')).join('')
-  printDoc('<div class="c b" style="font-size:16px">KITCHEN</div><div class="c">' + esc(ono(no)) + ' · ' + esc(cart.otype || 'Dine-in') + (cart.table ? ' · ' + esc(cart.table) : '') + '</div><div class="c">' + new Date().toLocaleTimeString() + '</div><hr>' + rows + '<hr>' + (cart.note ? '<div>Note: ' + esc(cart.note) + '</div>' : ''), '58mm auto', 'body{width:58mm;padding:3mm;font:12px/1.4 monospace;color:#000}.c{text-align:center}.b{font-weight:700}hr{border:0;border-top:1px dashed #000}')
-}
 export const probeQuota = () => {
   const K = 'pos_probe'
   let used = 0
