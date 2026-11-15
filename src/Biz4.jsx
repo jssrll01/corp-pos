@@ -26,26 +26,21 @@ export const quoteDoc = (t, cart, cust, no) => {
   printDoc('<div class="c b" style="font-size:15px">' + esc(st.name) + '</div><div class="c b">QUOTATION</div><div class="c">Q-' + no + ' · ' + new Date().toLocaleDateString() + '</div>' + (cust ? '<div>Customer: ' + esc(cust.name) + '</div>' : '') + '<hr>' + rows + '<hr><div class="r"><span>Sub total</span><span>' + f(t.sub) + '</span></div>' + (t.disc > 0 ? '<div class="r"><span>Discount</span><span>-' + f(t.disc) + '</span></div>' : '') + '<div class="r"><span>' + esc(st.taxName || 'Tax') + '</span><span>' + f(t.tax) + '</span></div><div class="r b"><span>TOTAL</span><span>' + f(t.total) + '</span></div><hr><div class="c">Valid for 7 days. Prices may change without notice.</div>', '80mm auto', SLIP)
 }
 export function Landscape() {
-  const [p, setP] = useState(false)
-  const lock = () => { try { const o = screen.orientation; if (o && o.lock) o.lock('landscape').catch(() => {}) } catch (e) {} }
-  const full = () => { try { const h = document.documentElement; if (!document.fullscreenElement && h.requestFullscreen) { h.requestFullscreen().then(lock).catch(lock); return } } catch (e) {} lock() }
   useEffect(() => {
-    const chk = () => setP(window.innerHeight > window.innerWidth && window.matchMedia('(pointer:coarse)').matches)
+    const lock = () => { try { const o = screen.orientation; if (o && o.lock) o.lock('landscape').catch(() => {}) } catch (e) {} }
+    const full = () => {
+      try {
+        const h = document.documentElement
+        if (!document.fullscreenElement && h.requestFullscreen) { h.requestFullscreen().then(lock).catch(lock); return }
+      } catch (e) {}
+      lock()
+    }
     const first = () => { if (pref('fs1', '1') === '1') full(); else lock() }
-    chk(); lock()
-    window.addEventListener('resize', chk); window.addEventListener('orientationchange', chk)
-    document.addEventListener('pointerdown', first, { once: true })
-    return () => { window.removeEventListener('resize', chk); window.removeEventListener('orientationchange', chk); document.removeEventListener('pointerdown', first) }
+    lock()
+    document.addEventListener('pointerup', first, { once: true })
+    return () => document.removeEventListener('pointerup', first)
   }, [])
-  if (!p) return null
-  return (
-    <div className="rot">
-      <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="7" y="2" width="10" height="20" rx="2" /><path d="M11 18h2" /></svg>
-      <h2>Rotate your device</h2>
-      <div>This POS works in landscape.</div>
-      <button className="btn pri" onClick={full}>Go landscape</button>
-    </div>
-  )
+  return null
 }
 export function Utang({ close }) {
   const st = useStore(); const x = useX()
