@@ -6,6 +6,7 @@ import { MTABS, setMgr } from './mgr.js'
 import { money, num, r2, put, take, tracked, qtyAt, MAIN, audit } from './inv.js'
 import { ono } from './cart.js'
 import { setX, uid } from './xstore.js'
+import { nextOrderNo } from './fx.js'
 const awh = () => getState().settings.activeWh || MAIN
 const Shell = ({ t, close, children }) => (
   <div className="overlay" style={{ zIndex: 9500 }} onClick={close}>
@@ -29,7 +30,7 @@ function Keypad({ close }) {
   const ok = amt > 0 && (method !== 'cash' || num(v.rec) >= total)
   const pay = () => {
     const now = new Date().toISOString()
-    const no = Math.max(0, ...getState().orders.map((o) => num(o.no))) + 1
+    const no = nextOrderNo()
     const order = { id: uid(), no, date: now, items: [{ id: 'quick', name: 'Quick sale', qty: 1, price: amt, cost: 0 }], total, tax, net: r2(total - tax), cogs: 0, method, paid: total, received: method === 'cash' ? num(v.rec) : total, balance: 0, payments: [{ id: uid(), date: now, amount: total, method, note: '' }], by: 'Admin', customerName: '' }
     setState((s) => ({ orders: [order, ...s.orders] })); audit('Quick sale', ono(no) + ' ' + money(total)); setDone('Saved ' + ono(no) + (method === 'cash' ? ', change ' + money(change) : '')); setV({ amt: '', rec: '' })
   }

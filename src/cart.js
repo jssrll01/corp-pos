@@ -3,7 +3,7 @@ export const METHODS = [['cash', 'Cash'], ['ewallet', 'E-Wallet'], ['bank', 'Ban
 export const MLABEL = { cash: 'Cash', ewallet: 'E-Wallet', bank: 'Bank Transfer' }
 export const ono = (n) => '#' + String(n).padStart(5, '0')
 export const fmt = (n, cur) => cur + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-const EMPTY = { items: [], dtype: '%', dval: '', method: 'cash', received: '', note: '', customer: '', level: 'retail', redeem: '', partial: false, dep: '', resId: '' }
+const EMPTY = { items: [], dtype: '%', dval: '', method: 'cash', received: '', note: '', customer: '', level: 'retail', redeem: '', partial: false, dep: '', resId: '', otype: 'Dine-in', table: '' }
 let st = EMPTY
 try { const s = JSON.parse(localStorage.getItem('pos_cart')); if (s && Array.isArray(s.items)) st = { ...EMPTY, ...s } } catch (e) {}
 const subs = new Set()

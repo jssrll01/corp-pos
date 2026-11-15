@@ -1,0 +1,19 @@
+html[data-dens=large]{--h:46px;--hh:54px}
+html[data-dens=large] body{font-size:15px}
+.mainc{grid-template-rows:var(--hh) auto minmax(0,1fr)}
+.sw{min-height:0}
+.strip{padding:7px 12px;font-weight:700;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;gap:8px}
+.strip.warn{background:#fef3c7;color:#92400e}.strip.high{background:#fed7aa;color:#9a3412}.strip.crit{background:#fecaca;color:#991b1b}
+.chip.st{border:0;cursor:pointer;font-family:inherit}
+.chip.warn{background:#fef3c7;color:#92400e}.chip.high{background:#fed7aa;color:#9a3412}.chip.crit{background:#fecaca;color:#991b1b}
+.toasts{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:99990;display:grid;gap:6px;pointer-events:none}
+.toast{background:#111827;color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;box-shadow:0 8px 24px #0005;max-width:80vw}
+.toast.ok{background:#166534}.toast.bad{background:#991b1b}
+.meter{height:12px;border-radius:8px;background:#e8ebf3;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--ok)}
+.meter.warn i{background:#f59e0b}.meter.high i{background:#f97316}.meter.crit i{background:var(--bad)}
+.tsec{margin:14px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);font-weight:700}
+.lname u{cursor:pointer;color:var(--ac)}
+.otype .btn{height:30px;font-size:13px;padding:0 6px}
+.ordfoot .row2 .btn{padding:0 6px;min-width:0}
+@media(max-width:900px){.hide9{display:none}}

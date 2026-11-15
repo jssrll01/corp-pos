@@ -89,7 +89,7 @@ export function Home({ go }) {
   )
 }
 
-function Calc({ close }) {
+export function Calc({ close }) {
   const [d, setD] = useState('0'); const [p, setP] = useState(null); const [op, setOp] = useState(''); const [fr, setFr] = useState(true)
   const ap = (a, b, o) => (o === '+' ? a + b : o === '-' ? a - b : o === '×' ? a * b : o === '÷' ? (b ? a / b : 0) : b)
   const dig = (k) => { if (fr) { setD(k === '.' ? '0.' : k); setFr(false) } else if (!(k === '.' && d.includes('.'))) setD(d + k) }
@@ -107,16 +107,17 @@ function Calc({ close }) {
   )
 }
 
-function Shift({ close }) {
+export function Shift({ close }) {
   const st = useStore(); const x = useX(); const sh = x.shift
   const [fl, setFl] = useState(''); const [cn, setCn] = useState(''); const [res, setRes] = useState(null)
   const os = sh ? st.orders.filter((o) => !o.voided && o.date >= sh.start) : []
-  const cashIn = sum(os, (o) => (o.payments || [{ method: o.method, amount: o.paid ?? o.total }]).filter((p) => p.method === 'cash').reduce((a, p) => a + num(p.amount), 0))
+  const cashIn = sh ? r2(st.orders.reduce((a, o) => a + (o.payments || [{ date: o.date, method: o.method, amount: o.paid ?? o.total }]).filter((p) => p.method === 'cash' && (p.date || o.date) >= sh.start).reduce((b, p) => b + num(p.amount), 0), 0)) : 0
   const log = sh ? st.cashlog.filter((c) => c.date >= sh.start) : []
   const inn = sum(log.filter((c) => c.type === 'in'), (c) => c.amount)
   const out = sum(log.filter((c) => c.type === 'out'), (c) => c.amount)
   const exp = sh ? sum(st.expenses.filter((e) => e.date >= sh.start && (e.method || 'cash') === 'cash'), (e) => e.amount) : 0
-  const expected = r2(num(sh && sh.float) + cashIn + inn - out - exp)
+  const vr = sh ? sum((st.voided || []).filter((o) => o.voidAt >= sh.start && o.date < sh.start), (o) => o.refundCash) : 0
+  const expected = r2(num(sh && sh.float) + cashIn + inn - out - exp - vr)
   const open = () => { setX({ shift: { start: new Date().toISOString(), float: num(fl), by: curUser().name } }); audit('Shift opened', money(num(fl))) }
   const shut = () => {
     if (cn === '') return window.alert('Enter the counted cash')
@@ -145,7 +146,7 @@ function Shift({ close }) {
   )
 }
 
-function Drawer({ close }) {
+export function Drawer({ close }) {
   const st = useStore()
   const [t, setT] = useState('in'); const [a, setA] = useState(''); const [n, setN] = useState('')
   const go = () => {
@@ -164,11 +165,11 @@ function Drawer({ close }) {
   )
 }
 
-function ZRep({ close }) {
+export function ZRep({ close }) {
   const st = useStore()
   const [d, setD] = useState(dkey(new Date()))
-  const all = st.orders.filter((o) => dkey(o.date) === d)
-  const os = all.filter((o) => !o.voided); const vd = all.filter((o) => o.voided)
+  const os = st.orders.filter((o) => dkey(o.date) === d)
+  const vd = (st.voided || []).filter((o) => dkey(o.voidAt || o.date) === d)
   const bm = {}
   os.forEach((o) => (o.payments || [{ method: o.method, amount: o.paid ?? o.total }]).forEach((p) => { const k = MLABEL[p.method] || p.method; bm[k] = r2((bm[k] || 0) + num(p.amount)) }))
   const cl = st.cashlog.filter((c) => dkey(c.date) === d)
@@ -215,7 +216,7 @@ function Refund({ close }) {
   )
 }
 
-function Restock({ close }) {
+export function Restock({ close }) {
   const st = useStore()
   const [id, setId] = useState(''); const [q, setQ] = useState(''); const [b, setB] = useState(''); const [e, setE] = useState(''); const [m, setM] = useState('')
   const wh = st.settings.activeWh || MAIN
@@ -236,7 +237,7 @@ function Restock({ close }) {
   )
 }
 
-function Expense({ close }) {
+export function Expense({ close }) {
   const [a, setA] = useState(''); const [c, setC] = useState(''); const [d, setD] = useState(''); const [m, setM] = useState('')
   const go = () => {
     if (num(a) <= 0) return setM('Enter an amount')
@@ -254,7 +255,7 @@ function Expense({ close }) {
   )
 }
 
-function Reorder({ close }) {
+export function Reorder({ close }) {
   const st = useStore()
   const th = (p) => (num(p.reorder) > 0 ? num(p.reorder) : num(st.settings.lowStock))
   const rows = st.products.filter((p) => isLow(p, st))
@@ -265,7 +266,7 @@ function Reorder({ close }) {
   )
 }
 
-function Notes({ close }) {
+export function Notes({ close }) {
   const x = useX()
   return (
     <Shell t="Notes" close={close}>

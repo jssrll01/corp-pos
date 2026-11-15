@@ -15,38 +15,47 @@ import Kiosk from './Kiosk.jsx'
 import Tools from './Tools.jsx'
 import Activate from './pages/Activate.jsx'
 import { checkStored } from './license.js'
-import { Home, Clock, Bell, ToolsPage } from './Biz.jsx'
+import { Home, Clock } from './Biz.jsx'
+import ToolsPage from './ToolsHub.jsx'
+import { Bell2, Toaster, StorageStrip, DataCenter, Help, useMeasure } from './Biz2.jsx'
 import { useX } from './xstore.js'
-import { pref, setPref, applyPrefs } from './fx.js'
+import { pref, setPref, applyPrefs, toggleFull, wakeLock } from './fx.js'
 const NAV = [['home', 'Dashboard', 'chart'], ['cashier', 'Register', 'register'], ['hold', 'Parked and Reserved', 'pause'], ['orders', 'Orders', 'box'], ['customers', 'Customers', 'users'], ['attend', 'Attendance', 'clock'], ['tools', 'Tools', 'sliders'], ['manage', 'Management', 'briefcase']]
 export default function App() {
   const { settings } = useStore()
   const mg = useMgr()
   const x = useX()
-  const [page, setPage] = useState('cashier')
+  const m = useMeasure()
+  const [page, setPage] = useState(() => { const p = pref('page', 'cashier'); return NAV.some((n) => n[0] === p) ? p : 'cashier' })
   const [min, setMin] = useState(pref('sb', window.innerWidth < 900 ? '1' : '0') === '1')
-  const go = (p) => setPage(p)
+  const [modal, setModal] = useState(null)
   const [online, setOnline] = useState(navigator.onLine)
   const [inst, setInst] = useState(null)
   const [dark, setDark] = useState(pref('theme', 'light') === 'dark')
   const [lic, setLic] = useState(null)
+  const go = (p) => { setPage(p); setPref('page', p) }
   useEffect(() => {
     const on = () => setOnline(true)
     const off = () => setOnline(false)
     const bip = (e) => { e.preventDefault(); setInst(e) }
     const ins = () => setInst(null)
+    const vis = () => { if (document.visibilityState === 'visible') wakeLock(pref('wake', '1') === '1') }
+    const key = (e) => { if (e.key === '?' && !/INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '')) setModal('help') }
     window.addEventListener('online', on); window.addEventListener('offline', off)
     window.addEventListener('beforeinstallprompt', bip); window.addEventListener('appinstalled', ins)
+    document.addEventListener('visibilitychange', vis); document.addEventListener('keydown', key)
+    vis()
     return () => {
       window.removeEventListener('online', on); window.removeEventListener('offline', off)
       window.removeEventListener('beforeinstallprompt', bip); window.removeEventListener('appinstalled', ins)
+      document.removeEventListener('visibilitychange', vis); document.removeEventListener('keydown', key)
     }
   }, [])
   useEffect(() => { checkStored().then(setLic) }, [])
   useEffect(() => {
     let t
     const ev = ['pointerdown', 'keydown']
-    const reset = () => { clearTimeout(t); const m = parseFloat(pref('idle', '0')); if (m > 0) t = setTimeout(() => setMgr({ unlocked: false }), m * 60000) }
+    const reset = () => { clearTimeout(t); const v = parseFloat(pref('idle', '0')); if (v > 0) t = setTimeout(() => setMgr({ unlocked: false }), v * 60000) }
     ev.forEach((e) => document.addEventListener(e, reset)); reset()
     return () => { clearTimeout(t); ev.forEach((e) => document.removeEventListener(e, reset)) }
   }, [])
@@ -78,13 +87,16 @@ export default function App() {
             <button className="btn ib" onClick={toggleSb} aria-label="Toggle menu"><Ic n="menu" /></button>
             <div className="ttl">{title}</div>
             {inst && <button className="btn sm" onClick={install}>Install</button>}
-            <span className={'chip ' + (x.shift ? 'ok' : '')}>{x.shift ? 'Shift open' : 'No shift'}</span>
-            <span className={'chip ' + (online ? '' : 'bad')}>{online ? 'Online' : 'Offline mode'}</span>
+            <span className={'chip hide9 ' + (x.shift ? 'ok' : '')}>{x.shift ? 'Shift open' : 'No shift'}</span>
+            <span className={'chip hide9 ' + (online ? '' : 'bad')}>{online ? 'Online' : 'Offline mode'}</span>
+            <button className={'chip st ' + m.level} onClick={() => setModal('data')} aria-label="Storage">Storage {m.pct}%</button>
             <Clock />
             <button className="btn ib" onClick={palette} aria-label="Search commands"><Icon n="search" s={18} /></button>
-            <Bell go={go} />
+            <Bell2 go={go} m={m} openData={() => setModal('data')} />
+            <button className="btn ib" onClick={toggleFull} aria-label="Fullscreen"><Ic n="expand" /></button>
             <button className="btn ib" onClick={toggleTheme} aria-label="Theme"><Ic n={dark ? 'sun' : 'moon'} /></button>
           </header>
+          <StorageStrip m={m} onOpen={() => setModal('data')} />
           <AnimatePresence mode="wait">
             <motion.main key={page} className={'page' + (page === 'cashier' ? ' nos' : '')} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.16 }}>
               {page === 'home' && <Home go={go} />}
@@ -99,6 +111,9 @@ export default function App() {
           </AnimatePresence>
         </div>
       </div>
+      {modal === 'data' && <DataCenter close={() => setModal(null)} />}
+      {modal === 'help' && <Help close={() => setModal(null)} />}
+      <Toaster />
     </>
   )
 }
