@@ -1,19 +1,22 @@
-import { useEffect, useState } from 'react'
-import Icon from './icons.jsx'
-const lock = () => { try { const p = window.screen.orientation && window.screen.orientation.lock && window.screen.orientation.lock('landscape'); if (p && p.catch) p.catch(() => {}) } catch (e) {} }
+import { useEffect } from 'react'
+const lock = () => { try { const o = window.screen.orientation; if (o && o.lock) { const p = o.lock('landscape'); if (p && p.catch) p.catch(() => {}) } } catch (e) {} }
+const full = () => {
+  try {
+    if (window.matchMedia('(display-mode: standalone)').matches || document.fullscreenElement) return
+    const r = document.documentElement
+    if (r.requestFullscreen) { const p = r.requestFullscreen(); if (p && p.catch) p.catch(() => {}) }
+  } catch (e) {}
+}
 export default function Kiosk() {
-  const [portrait, setPortrait] = useState(window.matchMedia('(orientation: portrait)').matches)
   useEffect(() => {
     const r = document.getElementById('root')
     if (r) r.removeAttribute('style')
-    const mq = window.matchMedia('(orientation: portrait)')
-    const o = () => setPortrait(mq.matches)
     const cm = (e) => e.preventDefault()
+    const first = () => { full(); setTimeout(lock, 150) }
     document.addEventListener('contextmenu', cm)
-    if (mq.addEventListener) mq.addEventListener('change', o); else mq.addListener(o)
+    document.addEventListener('pointerdown', first, { once: true })
     lock()
-    return () => { document.removeEventListener('contextmenu', cm); if (mq.removeEventListener) mq.removeEventListener('change', o); else mq.removeListener(o) }
+    return () => { document.removeEventListener('contextmenu', cm); document.removeEventListener('pointerdown', first) }
   }, [])
-  if (portrait) return <div className="kiosk"><Icon n="rotate" s={54} /><h2 style={{ margin: 0 }}>Rotate your device</h2></div>
   return null
 }

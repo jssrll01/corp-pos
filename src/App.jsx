@@ -7,22 +7,29 @@ import Management from './pages/Management.jsx'
 import Hold from './pages/Hold.jsx'
 import Customers from './pages/Customers.jsx'
 import Attend from './pages/Attend.jsx'
-import { NavBus, LowDot, UserSwitch } from './pages/Bits.jsx'
+import { NavBus, UserSwitch } from './pages/Bits.jsx'
 import { useMgr, setMgr, MTABS } from './mgr.js'
 import Icon from './icons.jsx'
+import Ic from './icons2.jsx'
 import Kiosk from './Kiosk.jsx'
 import Tools from './Tools.jsx'
 import Activate from './pages/Activate.jsx'
 import { checkStored } from './license.js'
-const NAV = [['cashier','Cash Register','register'],['hold','Parked & Reserved','pause'],['orders','Orders','box'],['customers','Customers','users'],['attend','Attendance','clock'],['manage','Management','briefcase']]
+import { Home, Clock, Bell, ToolsPage } from './Biz.jsx'
+import { useX } from './xstore.js'
+import { pref, setPref, applyPrefs } from './fx.js'
+const NAV = [['home', 'Dashboard', 'chart'], ['cashier', 'Register', 'register'], ['hold', 'Parked and Reserved', 'pause'], ['orders', 'Orders', 'box'], ['customers', 'Customers', 'users'], ['attend', 'Attendance', 'clock'], ['tools', 'Tools', 'sliders'], ['manage', 'Management', 'briefcase']]
 export default function App() {
   const { settings } = useStore()
   const mg = useMgr()
+  const x = useX()
   const [page, setPage] = useState('cashier')
-  const [open, setOpen] = useState(false)
-  const go = (p) => { setPage(p); setOpen(false) }
+  const [min, setMin] = useState(pref('sb', window.innerWidth < 900 ? '1' : '0') === '1')
+  const go = (p) => setPage(p)
   const [online, setOnline] = useState(navigator.onLine)
   const [inst, setInst] = useState(null)
+  const [dark, setDark] = useState(pref('theme', 'light') === 'dark')
+  const [lic, setLic] = useState(null)
   useEffect(() => {
     const on = () => setOnline(true)
     const off = () => setOnline(false)
@@ -35,56 +42,63 @@ export default function App() {
       window.removeEventListener('beforeinstallprompt', bip); window.removeEventListener('appinstalled', ins)
     }
   }, [])
-  const install = async () => { try { inst.prompt(); await inst.userChoice } catch (e) {} setInst(null) }
-  const [lic, setLic] = useState(null)
   useEffect(() => { checkStored().then(setLic) }, [])
+  useEffect(() => {
+    let t
+    const ev = ['pointerdown', 'keydown']
+    const reset = () => { clearTimeout(t); const m = parseFloat(pref('idle', '0')); if (m > 0) t = setTimeout(() => setMgr({ unlocked: false }), m * 60000) }
+    ev.forEach((e) => document.addEventListener(e, reset)); reset()
+    return () => { clearTimeout(t); ev.forEach((e) => document.removeEventListener(e, reset)) }
+  }, [])
+  const install = async () => { try { inst.prompt(); await inst.userChoice } catch (e) {} setInst(null) }
+  const toggleSb = () => { setPref('sb', min ? '0' : '1'); setMin(!min) }
+  const toggleTheme = () => { const n = dark ? 'light' : 'dark'; setPref('theme', n); applyPrefs(); setDark(!dark) }
+  const palette = () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))
   if (lic === null) return null
   if (!lic) return <><Kiosk /><Activate onOk={() => setLic(true)} /></>
+  const title = (NAV.find((n) => n[0] === page) || [])[1]
   return (
     <>
       <Kiosk />
       <Tools go={go} />
       <NavBus go={go} />
-      <header className="top">
-        <div className="brand">
-          {settings.logo && <img src={settings.logo} alt="" />}
-          <b>{settings.name}</b>
-        </div>
-        {inst && <button className="btn" onClick={install}>Install</button>}
-        <button className="btn burger" onClick={() => setOpen(true)} aria-label="Menu">
-          <LowDot />
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-        </button>
-      </header>
-      <AnimatePresence>
-        {open && (<>
-          <motion.div key="scrim" className="scrim" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={() => setOpen(false)} />
-          <motion.aside key="drawer" className="drawer raised" initial={{x:-300}} animate={{x:0}} exit={{x:-300}} transition={{type:'spring',damping:26,stiffness:260}}>
-            <h2 style={{margin:'4px 8px 12px'}}>{settings.name}</h2>
-            <UserSwitch />
-            {NAV.map(([k, l, i]) => (
-              <motion.button whileTap={{scale:.96}} key={k} className={'btn nav' + (page === k ? ' on' : '')} onClick={() => go(k)}><Icon n={i} />{l}</motion.button>
-            ))}
+      <div className={'app' + (min ? ' min' : '')}>
+        <aside className="side">
+          <div className="sbrand">{settings.logo && <img src={settings.logo} alt="" />}<b className="nl">{settings.name}</b></div>
+          {NAV.map(([k, l, i]) => <button key={k} className={'btn nav' + (page === k ? ' on' : '')} onClick={() => go(k)}><Icon n={i} /><span className="nl">{l}</span></button>)}
           {page === 'manage' && mg.unlocked && (<>
-              <small className="mut" style={{margin:'12px 8px 4px'}}>Management</small>
-              {MTABS.map(([k, l, ic]) => (
-                <motion.button whileTap={{scale:.96}} key={k} className={'btn nav' + (mg.tab === k ? ' on' : '')} onClick={() => { setMgr({ tab: k }); setOpen(false) }}><Icon n={ic} />{l}</motion.button>
-              ))}
-              <motion.button whileTap={{scale:.96}} className="btn nav" onClick={() => { setMgr({ unlocked: false }); setOpen(false) }}><Icon n="lock" />Lock</motion.button>
-            </>)}
-          </motion.aside>
-        </>)}
-      </AnimatePresence>
-      <AnimatePresence mode="wait">
-        <motion.main key={page} className="page" initial={{opacity:0,y:14}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-10}} transition={{duration:.22}}>
-          {page === 'cashier' && <Cashier />}
-          {page === 'orders' && <Orders />}
-          {page === 'manage' && <Management />}
-          {page === 'hold' && <Hold />}
-          {page === 'customers' && <Customers />}
-          {page === 'attend' && <Attend />}
-        </motion.main>
-      </AnimatePresence>
+            <small className="sbh nl">Management</small>
+            {MTABS.map(([k, l, ic]) => <button key={k} className={'btn nav' + (mg.tab === k ? ' on' : '')} onClick={() => setMgr({ tab: k })}><Icon n={ic} /><span className="nl">{l}</span></button>)}
+            <button className="btn nav" onClick={() => setMgr({ unlocked: false })}><Icon n="lock" /><span className="nl">Lock</span></button>
+          </>)}
+          <div className="sbfoot nl"><UserSwitch /></div>
+        </aside>
+        <div className="mainc">
+          <header className="top">
+            <button className="btn ib" onClick={toggleSb} aria-label="Toggle menu"><Ic n="menu" /></button>
+            <div className="ttl">{title}</div>
+            {inst && <button className="btn sm" onClick={install}>Install</button>}
+            <span className={'chip ' + (x.shift ? 'ok' : '')}>{x.shift ? 'Shift open' : 'No shift'}</span>
+            <span className={'chip ' + (online ? '' : 'bad')}>{online ? 'Online' : 'Offline mode'}</span>
+            <Clock />
+            <button className="btn ib" onClick={palette} aria-label="Search commands"><Icon n="search" s={18} /></button>
+            <Bell go={go} />
+            <button className="btn ib" onClick={toggleTheme} aria-label="Theme"><Ic n={dark ? 'sun' : 'moon'} /></button>
+          </header>
+          <AnimatePresence mode="wait">
+            <motion.main key={page} className={'page' + (page === 'cashier' ? ' nos' : '')} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.16 }}>
+              {page === 'home' && <Home go={go} />}
+              {page === 'cashier' && <Cashier />}
+              {page === 'orders' && <Orders />}
+              {page === 'manage' && <Management />}
+              {page === 'hold' && <Hold />}
+              {page === 'customers' && <Customers />}
+              {page === 'attend' && <Attend />}
+              {page === 'tools' && <ToolsPage />}
+            </motion.main>
+          </AnimatePresence>
+        </div>
+      </div>
     </>
   )
 }
