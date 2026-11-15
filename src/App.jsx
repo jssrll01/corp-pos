@@ -4,9 +4,13 @@ import { useStore } from './store.js'
 import Cashier from './pages/Cashier.jsx'
 import Orders from './pages/Orders.jsx'
 import Management from './pages/Management.jsx'
+import Hold from './pages/Hold.jsx'
+import Customers from './pages/Customers.jsx'
+import Attend from './pages/Attend.jsx'
+import { NavBus, LowDot, UserSwitch } from './pages/Bits.jsx'
 import Activate from './pages/Activate.jsx'
 import { checkStored } from './license.js'
-const NAV = [['cashier','Cash Register','🧾'],['orders','Orders','📦'],['manage','Management','⚙️']]
+const NAV = [['cashier','Cash Register','🧾'],['hold','Parked & Reserved','⏸️'],['orders','Orders','📦'],['customers','Customers','👥'],['attend','Attendance','🕒'],['manage','Management','⚙️']]
 export default function App() {
   const { settings } = useStore()
   const [page, setPage] = useState('cashier')
@@ -33,6 +37,7 @@ export default function App() {
   if (!lic) return <Activate onOk={() => setLic(true)} />
   return (
     <>
+      <NavBus go={go} />
       <header className="top">
         <div className="brand">
           {settings.logo && <img src={settings.logo} alt="" />}
@@ -40,6 +45,7 @@ export default function App() {
         </div>
         {inst && <button className="btn" onClick={install}>Install</button>}
         <button className="btn burger" onClick={() => setOpen(true)} aria-label="Menu">
+          <LowDot />
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         </button>
       </header>
@@ -48,6 +54,7 @@ export default function App() {
           <motion.div key="scrim" className="scrim" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={() => setOpen(false)} />
           <motion.aside key="drawer" className="drawer raised" initial={{x:-300}} animate={{x:0}} exit={{x:-300}} transition={{type:'spring',damping:26,stiffness:260}}>
             <h2 style={{margin:'4px 8px 12px'}}>{settings.name}</h2>
+            <UserSwitch />
             {NAV.map(([k, l, i]) => (
               <motion.button whileTap={{scale:.96}} key={k} className={'btn nav' + (page === k ? ' on' : '')} onClick={() => go(k)}><span>{i}</span>{l}</motion.button>
             ))}
@@ -59,6 +66,9 @@ export default function App() {
           {page === 'cashier' && <Cashier />}
           {page === 'orders' && <Orders />}
           {page === 'manage' && <Management />}
+          {page === 'hold' && <Hold />}
+          {page === 'customers' && <Customers />}
+          {page === 'attend' && <Attend />}
         </motion.main>
       </AnimatePresence>
     </>

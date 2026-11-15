@@ -3,6 +3,13 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useStore, setState, getState } from '../store.js'
 import { clearCart, fmt } from '../cart.js'
 import { expected, setKey } from '../license.js'
+import ProductExtra, { XEMPTY, toF, mkRow } from './ProductExtra.jsx'
+import Inventory from './Inventory.jsx'
+import Finance from './Finance.jsx'
+import Reports from './Reports.jsx'
+import People from './People.jsx'
+import System from './System.jsx'
+import { audit } from '../inv.js'
 let unlocked = false
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
 const readImg = (file, max, type) => new Promise((res) => {
@@ -51,7 +58,7 @@ function Lock({ onOk }) {
 }
 function Products() {
   const { products, settings } = useStore()
-  const empty = { id: '', name: '', price: '', barcode: '', image: '', stock: '' }
+  const empty = { id: '', name: '', price: '', barcode: '', image: '', stock: '', ...XEMPTY }
   const [f, setF] = useState(empty)
   const [msg, setMsg] = useState('')
   const cur = settings.currency
@@ -59,11 +66,11 @@ function Products() {
     const name = f.name.trim(); const price = parseFloat(f.price); const barcode = f.barcode.trim()
     if (!name || !(price >= 0)) return setMsg('Name and a valid price are required')
     if (barcode && products.some((p) => p.barcode === barcode && p.id !== f.id)) return setMsg('Barcode already used by another product')
-    const row = { id: f.id || uid(), name, price, barcode, image: f.image, stock: f.stock === '' ? '' : Math.max(0, parseInt(f.stock, 10) || 0) }
+    const row = mkRow(f, products.find((p) => p.id === f.id), uid, name, price, barcode)
     setState((s) => ({ products: f.id ? s.products.map((p) => (p.id === f.id ? row : p)) : [row, ...s.products] }))
     setF(empty); setMsg('')
   }
-  const del = (p) => { if (window.confirm('Delete ' + p.name + '?')) setState((s) => ({ products: s.products.filter((x) => x.id !== p.id) })) }
+  const del = (p) => { if (window.confirm('Delete ' + p.name + '?')) { setState((s) => ({ products: s.products.filter((x) => x.id !== p.id) })); audit('Product deleted', p.name) } }
   const pick = async (e) => { const file = e.target.files[0]; if (!file) return; const d = await readImg(file, 400, 'image/jpeg'); if (d) setF((x) => ({ ...x, image: d })); e.target.value = '' }
   return (
     <div className="grid">
@@ -80,6 +87,7 @@ function Products() {
           {f.image && <img className="thumb" src={f.image} alt="" />}
           {f.image && <button className="btn bad" onClick={() => setF({ ...f, image: '' })}>Remove</button>}
         </div>
+        <ProductExtra f={f} setF={setF} />
         {msg && <small style={{ color: 'var(--bad)' }}>{msg}</small>}
         <div className="row2">
           {f.id && <button className="btn" onClick={() => { setF(empty); setMsg('') }}>Cancel</button>}
@@ -91,8 +99,8 @@ function Products() {
         {products.map((p) => (
           <motion.div key={p.id} className="raised prow" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -30 }}>
             <div className="pimg inset sm">{p.image ? <img src={p.image} alt="" /> : <span>{p.name.slice(0, 1).toUpperCase()}</span>}</div>
-            <div className="pinfo"><b>{p.name}</b><small>{fmt(p.price, cur)}{p.barcode ? ' · ' + p.barcode : ''}{p.stock != null && p.stock !== '' ? ' · stock ' + p.stock : ''}</small></div>
-            <button className="btn" onClick={() => { setF({ id: p.id, name: p.name, price: String(p.price), barcode: p.barcode || '', image: p.image || '', stock: p.stock == null ? '' : String(p.stock) }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>Edit</button>
+            <div className="pinfo"><b>{p.name}</b><small>{fmt(p.price, cur)}{p.sku ? ' · ' + p.sku : ''}{p.barcode ? ' · ' + p.barcode : ''}{p.stock != null && p.stock !== '' ? ' · stock ' + p.stock : ''}</small></div>
+            <button className="btn" onClick={() => { setF(toF(p)); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>Edit</button>
             <button className="btn bad" onClick={() => del(p)}>Delete</button>
           </motion.div>
         ))}
@@ -116,7 +124,7 @@ function Settings() {
     const nk = key.trim().toUpperCase()
     if (nk.length < 4) return setMsg('Activation key must be at least 4 characters')
     setState((s) => ({ settings: { ...s.settings, ...d, name: d.name.trim(), currency: d.currency.trim(), tax, pin: String(d.pin) } }))
-    setKey(nk); setMsg('Saved')
+    setKey(nk); audit('Settings saved', d.name); setMsg('Saved')
   }
   return (
     <div className="raised mpanel">
@@ -144,7 +152,7 @@ function Data() {
   const { orders, products } = useStore()
   const fr = useRef(null)
   const [msg, setMsg] = useState('')
-  const backup = () => { const s = getState(); save('pos-backup-' + stamp() + '.json', JSON.stringify({ app: 'pos', version: 1, settings: s.settings, products: s.products, orders: s.orders }, null, 2), 'application/json') }
+  const backup = () => { const s = getState(); save('pos-backup-' + stamp() + '.json', JSON.stringify({ app: 'pos', version: 2, ...s }, null, 2), 'application/json') }
   const restore = (e) => {
     const file = e.target.files[0]; e.target.value = ''
     if (!file) return
@@ -154,7 +162,7 @@ function Data() {
         const j = JSON.parse(r.result)
         if (!j || !Array.isArray(j.products) || !Array.isArray(j.orders) || typeof j.settings !== 'object') throw new Error('bad')
         if (!window.confirm('Replace ALL current data with this backup?')) return
-        setState((s) => ({ products: j.products, orders: j.orders, settings: { ...s.settings, ...j.settings } }))
+        setState((s) => { const { app, version, ...rest } = j; return { ...rest, settings: { ...s.settings, ...j.settings } } })
         setMsg('Backup restored')
       } catch (err) { setMsg('Invalid backup file') }
     }
@@ -226,7 +234,7 @@ function Sales() {
     </div>
   )
 }
-const TABS = [['products', 'Products'], ['settings', 'Settings'], ['data', 'Data'], ['sales', 'Sales']]
+const TABS = [['products', 'Products'], ['inventory', 'Inventory'], ['finance', 'Finance'], ['reports', 'Reports'], ['people', 'People'], ['system', 'System'], ['settings', 'Settings'], ['data', 'Data'], ['sales', 'Sales']]
 export default function Management() {
   const [ok, setOk] = useState(unlocked)
   const [tab, setTab] = useState('products')
@@ -243,6 +251,11 @@ export default function Management() {
           {tab === 'settings' && <Settings />}
           {tab === 'data' && <Data />}
           {tab === 'sales' && <Sales />}
+          {tab === 'inventory' && <Inventory />}
+          {tab === 'finance' && <Finance />}
+          {tab === 'reports' && <Reports />}
+          {tab === 'people' && <People />}
+          {tab === 'system' && <System />}
         </motion.div>
       </AnimatePresence>
     </div>

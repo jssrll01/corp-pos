@@ -136,3 +136,15 @@ body{background:var(--bg)}
 .pcard:active{transform:scale(.98)}
 .sheet{border-radius:18px 0 0 18px}
 .drawer{border-radius:0 18px 18px 0}
+/* b11 */
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+.tblw{overflow-x:auto;margin-top:8px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th,.tbl td{padding:6px 8px;text-align:left;border-bottom:1px solid rgba(128,128,128,.25);white-space:nowrap}
+.mpanel{display:grid;gap:10px;padding:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.banner{padding:10px 12px;margin:10px 0;border-radius:10px;background:rgba(255,170,0,.18);cursor:pointer;font-size:13px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#e5484d;margin-left:6px}
+.stk.low{color:#d98b00}.stk.out{color:#e5484d}
+.wrap{flex-wrap:wrap}
+.lbl{display:grid;gap:4px;font-size:13px}
