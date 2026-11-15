@@ -7,7 +7,7 @@ import { ono, MLABEL, useCart } from './cart.js'
 import { Tbl, Tabs } from './ui.jsx'
 import { Sh, R, useMeasure } from './Biz2.jsx'
 import { printDoc } from './print.js'
-import { pref, setPref, getRollup, getLimit, probeQuota, planArchive, exportArchive, exportOrdersCsv, purgeArchive, importArchive, shrinkImages, doBackup, toast, shareText } from './fx.js'
+import { expAmt, expDate, pref, setPref, getRollup, getLimit, probeQuota, planArchive, exportArchive, exportOrdersCsv, purgeArchive, importArchive, shrinkImages, doBackup, toast, shareText } from './fx.js'
 const sum = (a, f) => r2(a.reduce((s, o) => s + num(f(o)), 0))
 const span = (n, off = 0) => { const a = []; for (let i = n - 1 + off; i >= off; i--) { const d = new Date(); d.setDate(d.getDate() - i); a.push(dkey(d)) } return a }
 const grp = (os) => { const m = {}; os.forEach((o) => { const k = dkey(o.date); (m[k] || (m[k] = [])).push(o) }); return m }
@@ -48,8 +48,8 @@ export function Trends({ close }) {
     body = (<><R big a={(st.settings.taxName || 'Tax') + ' collected'} b={money(sum(os, (o) => o.tax))} /><Tbl name="tax-by-day" rows={rows} cols={[['Date', (r) => r.d], ['Orders', (r) => r.n], ['Sales', (r) => money(r.s)], ['Tax', (r) => money(r.x)]]} /></>)
   } else {
     const rev = sum(os, (o) => num(o.total) - num(o.tax)), cg = sum(os, (o) => o.cogs)
-    const ex = sum((st.expenses || []).filter((e) => ds.includes(dkey(e.date))), (e) => e.amount)
-    body = (<><div className="sumbox inset"><R a="Revenue (without tax)" b={money(rev)} /><R a="Cost of goods" b={money(cg)} /><R a="Gross profit" b={money(rev - cg)} /><R a="Expenses" b={money(ex)} /><R big a="Net profit" b={money(rev - cg - ex)} /></div><small className="mut">Orders without a recorded cost count as cost 0. Expenses are read from each expense's amount field.</small></>)
+    const ex = sum((st.expenses || []).filter((e) => ds.includes(dkey(expDate(e)))), (e) => expAmt(e))
+    body = (<><div className="sumbox inset"><R a="Revenue (without tax)" b={money(rev)} /><R a="Cost of goods" b={money(cg)} /><R a="Gross profit" b={money(rev - cg)} /><R a="Expenses" b={money(ex)} /><R big a="Net profit" b={money(rev - cg - ex)} /></div><small className="mut">Orders without a recorded cost count as cost 0.</small></>)
   }
   return (
     <Sh t="Trends and profit" close={close} w={680}>

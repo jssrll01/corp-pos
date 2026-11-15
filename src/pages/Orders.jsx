@@ -70,6 +70,7 @@ export default function Orders() {
                     <div className="sumline mut"><span>Paid / Balance</span><span>{money(o.paid ?? o.total)} / {money(o.balance || 0)}</span></div>
                     {o.by && <div className="mut">Cashier: {o.by}</div>}
                     {o.note && <div className="mut">Note: {o.note}</div>}
+                    {(o.returns || []).map((r) => <div key={r.id} className="mut">Returned {new Date(r.date).toLocaleDateString()}: {r.items.map((z) => z.qty + " x " + z.name).join(", ")} · {money(r.amount)}</div>)}
                     {o.voided && <div className="mut">Voided {new Date(o.voidAt).toLocaleString()} by {o.voidBy} · {o.voidReason || 'no reason'} · cash refunded {money(o.refundCash || 0)}</div>}
                     {!o.voided && <PrintBtns o={o} />}
                     <div className="row2">

@@ -71,11 +71,11 @@ export const nextOrderNo = () => {
   return m + 1
 }
 /* ---------- voids and balances ---------- */
-export const voidOrder = (o, reason = '') => {
+export const voidOrder = (o, reason = '', restock = true) => {
   const s = getState()
   const wh = o.whId || s.settings.activeWh || 'main'
   const moves = []
-  const prods = s.products.map((p) => {
+  const prods = !restock ? s.products : s.products.map((p) => {
     const its = o.items.filter((i) => i.id === p.id)
     if (!its.length || !tracked(p)) return p
     let q = p
@@ -222,4 +222,17 @@ export const probeQuota = () => {
   const cap = used + lo
   setPref('quota', cap)
   return cap
+}
+/* ---------- expense field detection ---------- */
+const EK = ['amount', 'amt', 'value', 'total', 'sum', 'cost', 'price']
+export const expAmt = (e) => {
+  if (!e) return 0
+  for (const k of EK) { const v = Number(e[k]); if (e[k] !== '' && e[k] != null && isFinite(v)) return v }
+  const f = Object.entries(e).find(([k, v]) => !/^(id|no|date|at|qty|count)/i.test(k) && typeof v === 'number' && v > 0)
+  return f ? f[1] : 0
+}
+export const expDate = (e) => (e && (e.date || e.at || e.created || e.time)) || ''
+export const expLabel = (e) => {
+  for (const k of ['cat', 'category', 'name', 'title', 'reason', 'desc', 'description', 'note', 'label', 'for', 'type']) if (e && typeof e[k] === 'string' && e[k].trim()) return e[k].trim()
+  return 'Other'
 }

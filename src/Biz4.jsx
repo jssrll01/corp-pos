@@ -7,7 +7,7 @@ import { ono, METHODS } from './cart.js'
 import { Tbl, Tabs } from './ui.jsx'
 import { Sh, R } from './Biz2.jsx'
 import { printDoc } from './print.js'
-import { pref, getRollup, settleOrder, shareText } from './fx.js'
+import { expAmt, expDate, expLabel, pref, getRollup, settleOrder, shareText } from './fx.js'
 const sum = (a, f) => r2(a.reduce((s, o) => s + num(f(o)), 0))
 const esc = (s) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))
 const span = (n) => { const a = []; for (let i = n - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); a.push(dkey(d)) } return a }
@@ -352,20 +352,20 @@ export function Report({ close }) {
   const otherIn = sum(py.filter((p) => p.method !== 'cash' && p.method !== 'deposit'), (p) => p.amount)
   const collected = sum(py.filter((p) => p.note === 'Balance payment'), (p) => p.amount)
   const given = sum(os, (o) => o.balance)
-  const ex = (st.expenses || []).filter((e) => inD(e.date)); const exAmt = sum(ex, (e) => e.amount)
+  const ex = (st.expenses || []).filter((e) => inD(expDate(e))); const exAmt = sum(ex, (e) => expAmt(e))
   const feeAmt = sum((x.svc || []).filter((s) => inD(s.date)), (s) => s.fee)
   const rets = (x.returns || []).filter((z) => inD(z.date)); const retLoss = r2(sum(rets, (z) => z.amount) - sum(rets, (z) => z.cost))
-  const net = r2(gross - exAmt + feeAmt - retLoss)
+  const net = r2(gross - exAmt + feeAmt)
   let body = null
-  if (t === 'sum') body = (<div className="sumbox inset"><R a="Orders" b={os.length} /><R a="Sales" b={money(sales)} /><R a="Cost of goods" b={money(cogs)} /><R a="Gross profit (without tax)" b={money(gross)} /><R a="Expenses" b={money(exAmt)} /><R a="Service fees earned" b={money(feeAmt)} /><R a="Returns (lost margin)" b={money(retLoss)} /><R big a="Net kita" b={money(net)} /><R a="Cash received" b={money(cashIn)} /><R a="Other methods received" b={money(otherIn)} /><R a="Credit (utang) still unpaid" b={money(given)} /><R a="Utang collected" b={money(collected)} /></div>)
+  if (t === 'sum') body = (<div className="sumbox inset"><R a="Orders" b={os.length} /><R a="Sales" b={money(sales)} /><R a="Cost of goods" b={money(cogs)} /><R a="Gross profit (without tax)" b={money(gross)} /><R a="Expenses" b={money(exAmt)} /><R a="Service fees earned" b={money(feeAmt)} /><R a="Returns (already deducted from sales)" b={money(sum(rets, (z) => z.amount))} /><R big a="Net kita" b={money(net)} /><R a="Cash received" b={money(cashIn)} /><R a="Other methods received" b={money(otherIn)} /><R a="Credit (utang) still unpaid" b={money(given)} /><R a="Utang collected" b={money(collected)} /></div>)
   else if (t === 'type') { const m = {}; os.forEach((o) => { const a = m[typeOf(o)] || (m[typeOf(o)] = { n: 0, s: 0 }); a.n++; a.s += num(o.total) }); body = <Tbl name="sales-by-type" rows={Object.entries(m)} cols={[['Type', (z) => z[0]], ['Orders', (z) => z[1].n], ['Sales', (z) => money(z[1].s)]]} /> }
-  else if (t === 'exp') { const m = {}; ex.forEach((e) => { const k = e.cat || e.category || e.name || e.note || 'Other'; m[k] = r2((m[k] || 0) + num(e.amount)) }); body = <><R big a="Total expenses" b={money(exAmt)} /><Tbl name="expense-breakdown" rows={Object.entries(m).sort((a, b) => b[1] - a[1])} cols={[['Expense', (z) => z[0]], ['Amount', (z) => money(z[1])]]} /></> }
+  else if (t === 'exp') { const m = {}; ex.forEach((e) => { const k = expLabel(e); m[k] = r2((m[k] || 0) + expAmt(e)) }); body = <><R big a="Total expenses" b={money(exAmt)} /><Tbl name="expense-breakdown" rows={Object.entries(m).sort((a, b) => b[1] - a[1])} cols={[['Expense', (z) => z[0]], ['Amount', (z) => money(z[1])]]} /></> }
   else if (t === 'disc') { const rows = os.filter((o) => o.disc > 0).map((o) => ({ o, pc: num(o.sub) > 0 ? Math.round((o.disc / o.sub) * 100) : 0 })).sort((a, b) => b.pc - a.pc); body = <Tbl name="discount-audit" rows={rows} cols={[['Order', (z) => ono(z.o.no)], ['Cashier', (z) => z.o.by || ''], ['Sub total', (z) => money(z.o.sub)], ['Discount', (z) => money(z.o.disc)], ['%', (z) => z.pc + '%']]} /> }
   else if (t === 'month') {
     const mo = {}; const g = (k) => mo[k] || (mo[k] = { s: 0, t: 0, c: 0, e: 0 })
     st.orders.forEach((o) => { const a = g(dkey(o.date).slice(0, 7)); a.s += num(o.total); a.t += num(o.tax); a.c += num(o.cogs) })
     Object.entries(getRollup()).forEach(([k, v]) => { const a = g(k.slice(0, 7)); a.s += v.s; a.t += v.t; a.c += v.c })
-    ;(st.expenses || []).forEach((e) => { g(dkey(e.date).slice(0, 7)).e += num(e.amount) })
+    ;(st.expenses || []).forEach((e) => { g(dkey(expDate(e)).slice(0, 7)).e += expAmt(e) })
     const rows = Object.entries(mo).sort((a, b) => (a[0] < b[0] ? 1 : -1)).slice(0, 12).map(([k, a]) => ({ k, ...a, p: r2(a.s - a.t - a.c - a.e) }))
     body = <><Tbl name="monthly-profit" rows={rows} cols={[['Month', (z) => z.k], ['Sales', (z) => money(z.s)], ['Cost', (z) => money(z.c)], ['Expenses', (z) => money(z.e)], ['Profit', (z) => money(z.p)]]} /><small className="mut">Archived months include sales and cost from the rollup. Their expenses were removed with the archive.</small></>
   } else body = <button className="btn pri" onClick={() => dl('sales-items-' + dkey(new Date()) + '.csv', csv([['Order', 'Date', 'Item', 'Qty', 'Price', 'Cost', 'Customer', 'Type', 'Cashier'], ...os.flatMap((o) => o.items.map((i) => [ono(o.no), o.date, i.name, i.qty, i.price, i.cost || 0, o.customerName || '', typeOf(o), o.by || '']))]))}>Download item-level sales CSV ({os.length} orders)</button>
