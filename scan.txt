@@ -1,0 +1,124 @@
+== git
+origin	https://github.com/jssrll01/corp-pos.git (fetch)
+origin	https://github.com/jssrll01/corp-pos.git (push)
+6e6bdd9 Storage guard + archive, void patch, 50 new features
+e80a276 Corporate redesign: sidebar shell, split register, dashboard, tools, landscape lock
+9b5ab4f Clean stylesheet: single source, fixed header, one scroll area per page
+8678420 b21: revert rotate hack, scroll fix, payroll, gifts, coupons, rewards, labels, serials, keypad, price checker, exchange, palette
+846cb02 Gift button, feature rows, Cinema, Articles, Scholarships, Freelance
+?? scan.txt
+== deps
+{"framer-motion":"^14.14.0","react":"^19.3.1","react-dom":"^19.3.1"}
+== files (bytes)
+1023 public/icon-192.png
+3992 public/icon-512.png
+7147 src/App.jsx
+23070 src/Biz.jsx
+34044 src/Biz2.jsx
+1005 src/Kiosk.jsx
+1114 src/Sel.jsx
+9329 src/Tools.jsx
+2251 src/ToolsHub.jsx
+2330 src/barcode.js
+2291 src/cart.js
+4453 src/corp.css
+1465 src/corp2.css
+13900 src/fx.js
+2616 src/icons.jsx
+1015 src/icons2.jsx
+6186 src/inv.js
+627 src/license.js
+450 src/main.jsx
+876 src/mgr.js
+891 src/pages/Activate.jsx
+2182 src/pages/Attend.jsx
+1251 src/pages/Bits.jsx
+23519 src/pages/Cashier.jsx
+2371 src/pages/Customers.jsx
+9300 src/pages/Dash.jsx
+9683 src/pages/Finance.jsx
+2859 src/pages/Hold.jsx
+20505 src/pages/Inventory.jsx
+16536 src/pages/Management.jsx
+16382 src/pages/More.jsx
+6404 src/pages/Orders.jsx
+2032 src/pages/People.jsx
+3742 src/pages/ProductExtra.jsx
+6618 src/pages/Reports.jsx
+1973 src/pages/Scanner.jsx
+5467 src/pages/System.jsx
+4922 src/print.js
+1515 src/store.js
+10109 src/styles.css
+5337 src/ui.jsx
+672 src/xstore.js
+273454 total
+== previous paste applied?
+ok src/fx.js
+ok src/Biz2.jsx
+ok src/ToolsHub.jsx
+ok src/corp2.css
+voided in store: 1
+nextOrderNo in Tools: 2
+exports in Biz: 12
+== css line counts
+       58 src/corp.css
+       19 src/corp2.css
+      131 src/styles.css
+      208 total
+== theme variables used
+     15 var(--ac)
+      8 var(--line)
+      7 var(--tx)
+      7 var(--bad)
+      6 var(--hh)
+      5 var(--r)
+      5 var(--mut)
+      4 var(--h)
+      3 var(--ok)
+      3 var(--acs)
+      2 var(--card)
+      2 var(--bg)
+      1 var(--sb)
+== root/theme blocks
+src/styles.css: :root{--bg:#f4f6fa;--card:#fff;--line:#e2e6ef;--tx:#1f2937;--mut:#6b7280;--ac:#4f46e5;--acs:#eef0ff;--ok:#16a34a;--bad:#ef4444;--r:12px;--hh:56px;--h:36px}
+src/corp.css: :root{--sb:196px;--hh:48px;--bg:#f1f4f9;--ac:#2563eb;--acs:#e8efff}
+src/corp.css: html[data-theme=dark]{--bg:#0b1020;--card:#151c2e;--line:#26304a;--tx:#e6eaf5;--mut:#8f9bb8;--acs:#1c2a55}
+src/corp.css: html[data-theme=dark] .inset{background:#0d1426}
+src/corp.css: html[data-theme=dark] .input,html[data-theme=dark] .sell,html[data-theme=dark] .top{background:#0d1426;color:var(--tx)}
+src/corp.css: html[data-theme=dark] .btn:active{background:#1e2842}
+src/corp.css: html[data-theme=dark] .banner{background:#3a3010;color:#fde68a}
+src/corp.css: html[data-theme=dark] .bar,html[data-theme=dark] .hbt{background:#26304a}
+== font/radius/shadow
+9:.inset{background:#f0f2f8;border-radius:10px}
+10:.btn{height:var(--h);padding:0 14px;border:1px solid var(--line);background:var(--card);color:var(--tx);font:600 14px inherit;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+17:.input{width:100%;height:var(--h);padding:0 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--tx);font:inherit;outline:0}
+45:.banner{padding:8px 12px;border-radius:10px;background:#fff4d6;font-size:13px;cursor:pointer}
+54:.sell{position:absolute;left:0;right:0;top:100%;margin-top:4px;z-index:9000;background:#fff;border:1px solid var(--line);border-radius:10px;max-height:45vh;overflow:auto;box-shadow:0 8px 24px #0002}
+65:.pbadge{position:absolute;top:6px;right:6px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--ac);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}
+86:.scanbox{position:relative;overflow:hidden;border-radius:10px;background:#000;aspect-ratio:16/9}
+== index.html
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f172a" />
+<meta name="mobile-web-app-capable" content="yes" />
+<link rel="icon" href="/icon-192.png" /><link rel="apple-touch-icon" href="/icon-192.png" />
+<title>RestoPOS</title></head>
+<body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body></html>
+== manifest
+icon-192.png
+icon-512.png
+== build
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 9.18s
+
+PWA v2.0.0
+mode      generateSW
+precache  9 entries (572.25 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-7e5eb42b.js
