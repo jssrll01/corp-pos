@@ -5,7 +5,6 @@ import { useCart, setCart, clearCart, addItem, setQty, METHODS, ono } from '../c
 import { uid, num, r2, money, qtyAt, reserved, take, mvRow, curUser, calcSale, priceFor, tracked, isLow, audit } from '../inv.js'
 import { PrintBtns, Modal } from '../ui.jsx'
 import Scanner from './Scanner.jsx'
-const SAMPLE = [['Grilled Chicken', 129, '1001'], ['Beef Burger', 99, '1002'], ['Margherita Pizza', 119, '1003'], ['Caesar Salad', 79, '1004'], ['French Fries', 39, '1005'], ['Chocolate Cake', 59, '1006'], ['Lemonade', 29, '1007'], ['Hot Coffee', 25, '1008']]
 const spring = { type: 'spring', damping: 28, stiffness: 260 }
 const SL = ({ a, b, big }) => <div className={'sumline' + (big ? ' big' : '')}><span>{a}</span><span>{b}</span></div>
 const nav = (p) => window.dispatchEvent(new CustomEvent('pos-nav', { detail: p }))
@@ -47,7 +46,6 @@ export default function Cashier() {
   }
   const short = !t.full && !cart.partial
   const canPay = cart.items.length > 0 && (t.balance === 0 || (cart.partial && !!cust))
-  const loadSample = () => setState(() => ({ products: SAMPLE.map(([name, price, barcode]) => ({ id: uid(), name, price, barcode, image: '' })) }))
   const park = () => {
     if (!cart.items.length) return
     const label = window.prompt('Label for this parked sale (optional)', cust ? cust.name : '')
@@ -118,7 +116,7 @@ export default function Cashier() {
       <div className="chips"><button className={'btn' + (freq ? ' on' : '')} onClick={() => setFreq(!freq)}>Frequent items</button></div>
       {lowN > 0 && <div className="banner" onClick={() => nav('manage')}>{lowN} product(s) low on stock. Tap to review in Management.</div>}
       {products.length === 0 ? (
-        <div className="raised empty"><p>No products yet. Add them in Management, or load samples to test.</p><button className="btn pri" onClick={loadSample}>Load sample products</button></div>
+        <div className="raised empty"><p>No products yet. Add them in Management.</p></div>
       ) : list.length === 0 ? (
         <p className="mut">No product matches</p>
       ) : (

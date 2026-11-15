@@ -15,7 +15,7 @@ export function printReceipt(o, st, paper) {
   const pp = paper == null ? st.paper || 58 : isNaN(+paper) ? paper : +paper
   const f = (n) => st.currency + Number(n || 0).toFixed(2)
   const fs = R.size || 11
-  const foot = esc(R.foot || st.footer || 'Thank you! Come again.')
+  const foot = esc(R.foot || st.footer || '')
   const head = (R.head || '').split('\n').filter(Boolean).map((l) => `<div class="c">${esc(l)}</div>`).join('')
   const logo = R.logo !== false && st.logo ? `<img src="${st.logo}" style="max-width:40%;max-height:14mm;display:block;margin:0 auto 2mm">` : ''
   const addr = (st.address ? `<div class="c">${esc(st.address)}</div>` : '') + (st.phone ? `<div class="c">${esc(st.phone)}</div>` : '')

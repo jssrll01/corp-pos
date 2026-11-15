@@ -8,11 +8,13 @@ import Hold from './pages/Hold.jsx'
 import Customers from './pages/Customers.jsx'
 import Attend from './pages/Attend.jsx'
 import { NavBus, LowDot, UserSwitch } from './pages/Bits.jsx'
+import { useMgr, setMgr, MTABS } from './mgr.js'
 import Activate from './pages/Activate.jsx'
 import { checkStored } from './license.js'
 const NAV = [['cashier','Cash Register','🧾'],['hold','Parked & Reserved','⏸️'],['orders','Orders','📦'],['customers','Customers','👥'],['attend','Attendance','🕒'],['manage','Management','⚙️']]
 export default function App() {
   const { settings } = useStore()
+  const mg = useMgr()
   const [page, setPage] = useState('cashier')
   const [open, setOpen] = useState(false)
   const go = (p) => { setPage(p); setOpen(false) }
@@ -58,6 +60,13 @@ export default function App() {
             {NAV.map(([k, l, i]) => (
               <motion.button whileTap={{scale:.96}} key={k} className={'btn nav' + (page === k ? ' on' : '')} onClick={() => go(k)}><span>{i}</span>{l}</motion.button>
             ))}
+          {page === 'manage' && mg.unlocked && (<>
+              <small className="mut" style={{margin:'12px 8px 4px'}}>Management</small>
+              {MTABS.map(([k, l]) => (
+                <motion.button whileTap={{scale:.96}} key={k} className={'btn nav' + (mg.tab === k ? ' on' : '')} onClick={() => { setMgr({ tab: k }); setOpen(false) }}>{l}</motion.button>
+              ))}
+              <motion.button whileTap={{scale:.96}} className="btn nav" onClick={() => { setMgr({ unlocked: false }); setOpen(false) }}>🔒 Lock</motion.button>
+            </>)}
           </motion.aside>
         </>)}
       </AnimatePresence>

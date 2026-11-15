@@ -10,7 +10,7 @@ import Reports from './Reports.jsx'
 import People from './People.jsx'
 import System from './System.jsx'
 import { audit } from '../inv.js'
-let unlocked = false
+import { useMgr, setMgr } from '../mgr.js'
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
 const readImg = (file, max, type) => new Promise((res) => {
   const fr = new FileReader()
@@ -43,7 +43,7 @@ function Lock({ onOk }) {
   const [v, setV] = useState('')
   const [bad, setBad] = useState(false)
   const go = () => {
-    if (v === String(settings.pin)) { unlocked = true; onOk() }
+    if (v === String(settings.pin)) { setMgr({ unlocked: true }); onOk() }
     else { setBad(true); setV(''); setTimeout(() => setBad(false), 500) }
   }
   return (
@@ -120,7 +120,6 @@ function Settings() {
     if (!d.name.trim()) return setMsg('Display name is required')
     if (!(tax >= 0 && tax <= 100)) return setMsg('Tax must be between 0 and 100')
     if (String(d.pin).length < 4) return setMsg('PIN must be at least 4 characters')
-    if (!d.currency.trim()) return setMsg('Currency symbol is required')
     const nk = key.trim().toUpperCase()
     if (nk.length < 4) return setMsg('Activation key must be at least 4 characters')
     setState((s) => ({ settings: { ...s.settings, ...d, name: d.name.trim(), currency: d.currency.trim(), tax, pin: String(d.pin) } }))
@@ -142,7 +141,7 @@ function Settings() {
       <label className="lbl">Activation key (asked once when the app is first opened)<input className="input" value={key} onChange={(e) => { setKeyV(e.target.value); setMsg('') }} /></label>
       <label className="lbl">Store address (on receipt)<input className="input" value={d.address} onChange={(e) => set('address', e.target.value)} /></label>
       <label className="lbl">Phone (on receipt)<input className="input" value={d.phone} onChange={(e) => set('phone', e.target.value)} /></label>
-      <label className="lbl">Receipt footer<input className="input" placeholder="Thank you! Come again." value={d.footer} onChange={(e) => set('footer', e.target.value)} /></label>
+      <label className="lbl">Receipt footer<input className="input" value={d.footer} onChange={(e) => set('footer', e.target.value)} /></label>
       {msg && <small style={{ color: msg === 'Saved' ? 'var(--ok)' : 'var(--bad)' }}>{msg}</small>}
       <button className="btn pri" onClick={submit}>Save Settings</button>
     </div>
@@ -175,7 +174,7 @@ function Data() {
     if (!window.confirm('Reset EVERYTHING (products, orders, settings)?')) return
     if (!window.confirm('Last warning: this erases all data on this device.')) return
     clearCart(); try { localStorage.removeItem('pos_db'); localStorage.removeItem('pos_cart') } catch (e) {}
-    unlocked = false; location.reload()
+    setMgr({ unlocked: false }); location.reload()
   }
   return (
     <div className="raised mpanel">
@@ -234,30 +233,22 @@ function Sales() {
     </div>
   )
 }
-const TABS = [['products', 'Products'], ['inventory', 'Inventory'], ['finance', 'Finance'], ['reports', 'Reports'], ['people', 'People'], ['system', 'System'], ['settings', 'Settings'], ['data', 'Data'], ['sales', 'Sales']]
 export default function Management() {
-  const [ok, setOk] = useState(unlocked)
-  const [tab, setTab] = useState('products')
-  if (!ok) return <Lock onOk={() => setOk(true)} />
+  const { tab, unlocked } = useMgr()
+  if (!unlocked) return <Lock onOk={() => {}} />
   return (
-    <div>
-      <div className="seg tabs">
-        {TABS.map(([k, l]) => <button key={k} className={'btn' + (tab === k ? ' on' : '')} onClick={() => setTab(k)}>{l}</button>)}
-        <button className="btn" onClick={() => { unlocked = false; setOk(false) }}>Lock</button>
-      </div>
-      <AnimatePresence mode="wait">
-        <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
-          {tab === 'products' && <Products />}
-          {tab === 'settings' && <Settings />}
-          {tab === 'data' && <Data />}
-          {tab === 'sales' && <Sales />}
-          {tab === 'inventory' && <Inventory />}
-          {tab === 'finance' && <Finance />}
-          {tab === 'reports' && <Reports />}
-          {tab === 'people' && <People />}
-          {tab === 'system' && <System />}
-        </motion.div>
-      </AnimatePresence>
-    </div>
+    <AnimatePresence mode="wait">
+      <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
+        {tab === 'products' && <Products />}
+        {tab === 'settings' && <Settings />}
+        {tab === 'data' && <Data />}
+        {tab === 'sales' && <Sales />}
+        {tab === 'inventory' && <Inventory />}
+        {tab === 'finance' && <Finance />}
+        {tab === 'reports' && <Reports />}
+        {tab === 'people' && <People />}
+        {tab === 'system' && <System />}
+      </motion.div>
+    </AnimatePresence>
   )
 }

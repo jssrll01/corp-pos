@@ -70,7 +70,7 @@ function Expenses() {
   const month = st.expenses.filter((e) => inR(e.date, 'month')).reduce((a, e) => a + num(e.amount), 0)
   return (
     <Crud coll="expenses" title="Expense" empty={{ date: dkey(new Date()), cat: cats[0] ? cats[0][0] : '', method: 'cash', branchId: st.settings.activeBranch || 'main' }}
-      fields={[{ k: 'date', l: 'Date', t: 'date', req: true }, { k: 'cat', l: 'Category', t: 'select', o: cats }, { k: 'desc', l: 'Description', req: true }, { k: 'amount', l: 'Amount', t: 'number', req: true }, { k: 'method', l: 'Paid by', t: 'select', o: [['cash', 'Cash'], ['ewallet', 'E-Wallet'], ['bank', 'Bank']] }, { k: 'branchId', l: 'Branch', t: 'select', o: st.branches.map((b) => [b.id, b.name]) }]}
+      fields={[{ k: 'date', l: 'Date', t: 'date', req: true }, { k: 'cat', l: 'Category', ...(cats.length ? { t: 'select', o: cats } : {}) }, { k: 'desc', l: 'Description', req: true }, { k: 'amount', l: 'Amount', t: 'number', req: true }, { k: 'method', l: 'Paid by', t: 'select', o: [['cash', 'Cash'], ['ewallet', 'E-Wallet'], ['bank', 'Bank']] }, { k: 'branchId', l: 'Branch', t: 'select', o: st.branches.map((b) => [b.id, b.name]) }]}
       line={(r) => r.date + ' · ' + r.cat + ' · ' + money(r.amount)}
       after={<small className="mut">Expenses this month: {money(month)}</small>} />
   )

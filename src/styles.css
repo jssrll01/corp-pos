@@ -148,3 +148,5 @@ body{background:var(--bg)}
 .stk.low{color:#d98b00}.stk.out{color:#e5484d}
 .wrap{flex-wrap:wrap}
 .lbl{display:grid;gap:4px;font-size:13px}
+/* b14 */
+.drawer{overflow-y:auto;max-height:100vh}

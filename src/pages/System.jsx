@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useStore, setState } from '../store.js'
 import { num, audit } from '../inv.js'
 import { Tabs, Crud, Form } from '../ui.jsx'
-import SelfTest from './SelfTest.jsx'
 const sv = (label, fn) => (d) => { setState((s) => ({ settings: { ...s.settings, ...fn(d) } })); audit('Settings: ' + label) }
 function General() {
   const { settings: S, branches, warehouses } = useStore()
@@ -43,7 +42,7 @@ function Discounts() {
       line={(r) => (r.kind === 'bulk' ? 'Bulk' : 'Conditional') + ' · ' + r.value + (r.mode === '%' ? '%' : ' fixed') + ' · min ' + (r.min || 0) + (r.on === false ? ' · OFF' : '')} />
   )
 }
-const TABS = [['gen', 'General'], ['loy', 'Loyalty'], ['rcpt', 'Receipt'], ['br', 'Branches'], ['wh', 'Warehouses'], ['lv', 'Price levels'], ['disc', 'Discounts'], ['test', 'Self-test']]
+const TABS = [['gen', 'General'], ['loy', 'Loyalty'], ['rcpt', 'Receipt'], ['br', 'Branches'], ['wh', 'Warehouses'], ['lv', 'Price levels'], ['disc', 'Discounts']]
 export default function System() {
   const { branches } = useStore()
   const [t, setT] = useState('gen')
@@ -57,7 +56,6 @@ export default function System() {
       {t === 'wh' && <Crud coll="warehouses" title="Warehouse" empty={{ branchId: 'main' }} fields={[{ k: 'name', l: 'Warehouse name', req: true }, { k: 'branchId', l: 'Branch', t: 'select', o: branches.map((b) => [b.id, b.name]) }]} line={(r) => (branches.find((b) => b.id === r.branchId) || {}).name || ''} />}
       {t === 'lv' && <Crud coll="levels" title="Price level" fields={[{ k: 'name', l: 'Level name (e.g. Distributor)', req: true }]} line={() => 'Set its prices in each product form'} />}
       {t === 'disc' && <Discounts />}
-      {t === 'test' && <SelfTest />}
     </div>
   )
 }
