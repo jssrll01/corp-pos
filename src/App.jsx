@@ -9,9 +9,11 @@ import Customers from './pages/Customers.jsx'
 import Attend from './pages/Attend.jsx'
 import { NavBus, LowDot, UserSwitch } from './pages/Bits.jsx'
 import { useMgr, setMgr, MTABS } from './mgr.js'
+import Icon from './icons.jsx'
+import Kiosk from './Kiosk.jsx'
 import Activate from './pages/Activate.jsx'
 import { checkStored } from './license.js'
-const NAV = [['cashier','Cash Register','🧾'],['hold','Parked & Reserved','⏸️'],['orders','Orders','📦'],['customers','Customers','👥'],['attend','Attendance','🕒'],['manage','Management','⚙️']]
+const NAV = [['cashier','Cash Register','register'],['hold','Parked & Reserved','pause'],['orders','Orders','box'],['customers','Customers','users'],['attend','Attendance','clock'],['manage','Management','briefcase']]
 export default function App() {
   const { settings } = useStore()
   const mg = useMgr()
@@ -36,9 +38,10 @@ export default function App() {
   const [lic, setLic] = useState(null)
   useEffect(() => { checkStored().then(setLic) }, [])
   if (lic === null) return null
-  if (!lic) return <Activate onOk={() => setLic(true)} />
+  if (!lic) return <><Kiosk /><Activate onOk={() => setLic(true)} /></>
   return (
     <>
+      <Kiosk />
       <NavBus go={go} />
       <header className="top">
         <div className="brand">
@@ -58,14 +61,14 @@ export default function App() {
             <h2 style={{margin:'4px 8px 12px'}}>{settings.name}</h2>
             <UserSwitch />
             {NAV.map(([k, l, i]) => (
-              <motion.button whileTap={{scale:.96}} key={k} className={'btn nav' + (page === k ? ' on' : '')} onClick={() => go(k)}><span>{i}</span>{l}</motion.button>
+              <motion.button whileTap={{scale:.96}} key={k} className={'btn nav' + (page === k ? ' on' : '')} onClick={() => go(k)}><Icon n={i} />{l}</motion.button>
             ))}
           {page === 'manage' && mg.unlocked && (<>
               <small className="mut" style={{margin:'12px 8px 4px'}}>Management</small>
-              {MTABS.map(([k, l]) => (
-                <motion.button whileTap={{scale:.96}} key={k} className={'btn nav' + (mg.tab === k ? ' on' : '')} onClick={() => { setMgr({ tab: k }); setOpen(false) }}>{l}</motion.button>
+              {MTABS.map(([k, l, ic]) => (
+                <motion.button whileTap={{scale:.96}} key={k} className={'btn nav' + (mg.tab === k ? ' on' : '')} onClick={() => { setMgr({ tab: k }); setOpen(false) }}><Icon n={ic} />{l}</motion.button>
               ))}
-              <motion.button whileTap={{scale:.96}} className="btn nav" onClick={() => { setMgr({ unlocked: false }); setOpen(false) }}>🔒 Lock</motion.button>
+              <motion.button whileTap={{scale:.96}} className="btn nav" onClick={() => { setMgr({ unlocked: false }); setOpen(false) }}><Icon n="lock" />Lock</motion.button>
             </>)}
           </motion.aside>
         </>)}

@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-export const MTABS = [['products', 'Products'], ['inventory', 'Inventory'], ['finance', 'Finance'], ['reports', 'Reports'], ['people', 'People'], ['system', 'System'], ['settings', 'Settings'], ['data', 'Data'], ['sales', 'Sales']]
+export const MTABS = [['products', 'Products', 'tag'], ['inventory', 'Inventory', 'warehouse'], ['finance', 'Finance', 'coin'], ['reports', 'Reports', 'report'], ['people', 'People', 'users'], ['system', 'System', 'cog'], ['settings', 'Settings', 'sliders'], ['data', 'Data', 'db'], ['sales', 'Dashboard', 'chart']]
 let s = { tab: 'products', unlocked: false }
 const subs = new Set()
 export const getMgr = () => s

@@ -11,6 +11,8 @@ import People from './People.jsx'
 import System from './System.jsx'
 import { audit } from '../inv.js'
 import { useMgr, setMgr } from '../mgr.js'
+import Icon from '../icons.jsx'
+import Dash from './Dash.jsx'
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
 const readImg = (file, max, type) => new Promise((res) => {
   const fr = new FileReader()
@@ -48,7 +50,7 @@ function Lock({ onOk }) {
   }
   return (
     <motion.div className="raised lockbox" animate={bad ? { x: [0, -10, 10, -8, 8, 0] } : { x: 0 }} transition={{ duration: 0.4 }}>
-      <div className="check" style={{ background: 'var(--ac)' }}>🔒</div>
+      <div className="check" style={{ background: 'var(--ac)' }}><Icon n="lock" s={28} /></div>
       <h2 style={{ margin: 0 }}>Management PIN</h2>
       <input className="input" type="password" inputMode="numeric" autoFocus placeholder="Enter PIN" value={v} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && go()} />
       {bad && <small style={{ color: 'var(--bad)' }}>Wrong PIN</small>}
@@ -242,7 +244,7 @@ export default function Management() {
         {tab === 'products' && <Products />}
         {tab === 'settings' && <Settings />}
         {tab === 'data' && <Data />}
-        {tab === 'sales' && <Sales />}
+        {tab === 'sales' && <Dash />}
         {tab === 'inventory' && <Inventory />}
         {tab === 'finance' && <Finance />}
         {tab === 'reports' && <Reports />}

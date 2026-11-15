@@ -5,6 +5,7 @@ import { useCart, setCart, clearCart, addItem, setQty, METHODS, ono } from '../c
 import { uid, num, r2, money, qtyAt, reserved, take, mvRow, curUser, calcSale, priceFor, tracked, isLow, audit } from '../inv.js'
 import { PrintBtns, Modal } from '../ui.jsx'
 import Scanner from './Scanner.jsx'
+import Icon from '../icons.jsx'
 const spring = { type: 'spring', damping: 28, stiffness: 260 }
 const SL = ({ a, b, big }) => <div className={'sumline' + (big ? ' big' : '')}><span>{a}</span><span>{b}</span></div>
 const nav = (p) => window.dispatchEvent(new CustomEvent('pos-nav', { detail: p }))
@@ -106,9 +107,9 @@ export default function Cashier() {
     <div>
       <div className="searchrow">
         <input className="input" placeholder="Search name, SKU or scan barcode" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} inputMode="search" />
-        <button className="btn" onClick={() => setScan(true)} aria-label="Scan barcode">📷</button>
+        <button className="btn" onClick={() => setScan(true)} aria-label="Scan barcode"><Icon n="camera" /></button>
       </div>
-      {scan && <Scanner onClose={() => setScan(false)} onDetect={(c) => { const hit = byCode(String(c).toLowerCase()); if (hit) add(hit); else setQ(c); setScan(false) }} />}
+      {scan && <div className="scanfix"><button className="btn scanclose" onClick={() => setScan(false)}><Icon n="close" s={18} /> Close</button><Scanner onClose={() => setScan(false)} onDetect={(c) => { const hit = byCode(String(c).toLowerCase()); if (hit) add(hit); else setQ(c); setScan(false) }} /></div>}
       <div className="row2" style={{ marginTop: 10 }}>
         <select className="input" value={cart.level} onChange={(e) => setLevel(e.target.value)}><option value="retail">Retail</option>{levels.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}</select>
         <select className="input" value={cart.customer} onChange={(e) => pickCust(e.target.value)}><option value="">Walk-in</option>{customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
