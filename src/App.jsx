@@ -11,6 +11,7 @@ import { NavBus, LowDot, UserSwitch } from './pages/Bits.jsx'
 import { useMgr, setMgr, MTABS } from './mgr.js'
 import Icon from './icons.jsx'
 import Kiosk from './Kiosk.jsx'
+import Tools from './Tools.jsx'
 import Activate from './pages/Activate.jsx'
 import { checkStored } from './license.js'
 const NAV = [['cashier','Cash Register','register'],['hold','Parked & Reserved','pause'],['orders','Orders','box'],['customers','Customers','users'],['attend','Attendance','clock'],['manage','Management','briefcase']]
@@ -42,6 +43,7 @@ export default function App() {
   return (
     <>
       <Kiosk />
+      <Tools go={go} />
       <NavBus go={go} />
       <header className="top">
         <div className="brand">

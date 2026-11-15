@@ -13,6 +13,7 @@ import { audit } from '../inv.js'
 import { useMgr, setMgr } from '../mgr.js'
 import Icon from '../icons.jsx'
 import Dash from './Dash.jsx'
+import { Payroll, Gifts, Coupons, Serials, Rewards, Labels } from './More.jsx'
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
 const readImg = (file, max, type) => new Promise((res) => {
   const fr = new FileReader()
@@ -247,6 +248,12 @@ export default function Management() {
         {tab === 'settings' && <Settings />}
         {tab === 'data' && <Data />}
         {tab === 'sales' && <Dash />}
+      {tab === 'payroll' && <Payroll />}
+      {tab === 'gifts' && <Gifts />}
+      {tab === 'coupons' && <Coupons />}
+      {tab === 'rewards' && <Rewards />}
+      {tab === 'labels' && <Labels />}
+      {tab === 'serials' && <Serials />}
         {tab === 'inventory' && <Inventory />}
         {tab === 'finance' && <Finance />}
         {tab === 'reports' && <Reports />}
