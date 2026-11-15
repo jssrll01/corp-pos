@@ -4,6 +4,7 @@ import App from './App.jsx'
 import './styles.css'
 import './corp.css'
 import './corp2.css'
+import './corp3.css'
 import { applyPrefs, migrate } from './fx.js'
 import { Boundary } from './Biz2.jsx'
 applyPrefs()

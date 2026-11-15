@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useStore } from './store.js'
 import Cashier from './pages/Cashier.jsx'
@@ -17,12 +17,21 @@ import Activate from './pages/Activate.jsx'
 import { checkStored } from './license.js'
 import { Home, Clock } from './Biz.jsx'
 import ToolsPage from './ToolsHub.jsx'
-import { Bell2, Toaster, StorageStrip, DataCenter, Help, useMeasure } from './Biz2.jsx'
+import { Bell2, Toaster, StorageStrip, Help, useMeasure } from './Biz2.jsx'
+import { DataCenter2 } from './Biz3.jsx'
 import { useX } from './xstore.js'
-import { pref, setPref, applyPrefs, toggleFull, wakeLock } from './fx.js'
-const NAV = [['home', 'Dashboard', 'chart'], ['cashier', 'Register', 'register'], ['hold', 'Parked and Reserved', 'pause'], ['orders', 'Orders', 'box'], ['customers', 'Customers', 'users'], ['attend', 'Attendance', 'clock'], ['tools', 'Tools', 'sliders'], ['manage', 'Management', 'briefcase']]
+import { money, num, dkey, curUser } from './inv.js'
+import { pref, setPref, applyPrefs, toggleFull, wakeLock, doBackup } from './fx.js'
+const GROUPS = [
+  ['', [['home', 'Dashboard', 'chart']]],
+  ['Sales', [['cashier', 'Register', 'register'], ['hold', 'Parked and Reserved', 'pause'], ['orders', 'Orders', 'box'], ['customers', 'Customers', 'users']]],
+  ['Operations', [['attend', 'Attendance', 'clock'], ['tools', 'Tools', 'sliders']]],
+  ['Admin', [['manage', 'Management', 'briefcase']]],
+]
+const NAV = GROUPS.flatMap((g) => g[1])
 export default function App() {
-  const { settings } = useStore()
+  const st = useStore()
+  const { settings } = st
   const mg = useMgr()
   const x = useX()
   const m = useMeasure()
@@ -33,7 +42,11 @@ export default function App() {
   const [inst, setInst] = useState(null)
   const [dark, setDark] = useState(pref('theme', 'light') === 'dark')
   const [lic, setLic] = useState(null)
+  const [, bump] = useState(0)
   const go = (p) => { setPage(p); setPref('page', p) }
+  const today = useMemo(() => { const d = dkey(new Date()); return st.orders.filter((o) => dkey(o.date) === d).reduce((a, o) => a + num(o.total), 0) }, [st.orders])
+  const goal = num(pref('goal', '0'))
+  const bkDue = st.orders.length > 0 && Date.now() - num(pref('lastbk', '0')) > 7 * 864e5
   useEffect(() => {
     const on = () => setOnline(true)
     const off = () => setOnline(false)
@@ -66,6 +79,7 @@ export default function App() {
   if (lic === null) return null
   if (!lic) return <><Kiosk /><Activate onOk={() => setLic(true)} /></>
   const title = (NAV.find((n) => n[0] === page) || [])[1]
+  const who = (curUser().name || 'A').slice(0, 1).toUpperCase()
   return (
     <>
       <Kiosk />
@@ -74,7 +88,12 @@ export default function App() {
       <div className={'app' + (min ? ' min' : '')}>
         <aside className="side">
           <div className="sbrand">{settings.logo && <img src={settings.logo} alt="" />}<b className="nl">{settings.name}</b></div>
-          {NAV.map(([k, l, i]) => <button key={k} className={'btn nav' + (page === k ? ' on' : '')} onClick={() => go(k)}><Icon n={i} /><span className="nl">{l}</span></button>)}
+          {GROUPS.map(([h, items]) => (
+            <div key={h || 'top'}>
+              {h && <small className="sbg nl">{h}</small>}
+              {items.map(([k, l, i]) => <button key={k} className={'btn nav' + (page === k ? ' on' : '')} onClick={() => go(k)}><Icon n={i} /><span className="nl">{l}</span></button>)}
+            </div>
+          ))}
           {page === 'manage' && mg.unlocked && (<>
             <small className="sbh nl">Management</small>
             {MTABS.map(([k, l, ic]) => <button key={k} className={'btn nav' + (mg.tab === k ? ' on' : '')} onClick={() => setMgr({ tab: k })}><Icon n={ic} /><span className="nl">{l}</span></button>)}
@@ -85,9 +104,10 @@ export default function App() {
         <div className="mainc">
           <header className="top">
             <button className="btn ib" onClick={toggleSb} aria-label="Toggle menu"><Ic n="menu" /></button>
-            <div className="ttl">{title}</div>
+            <div className="ttl">{title}<small>{new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' })} · {x.shift ? 'shift open' : 'no shift'}</small></div>
             {inst && <button className="btn sm" onClick={install}>Install</button>}
-            <span className={'chip hide9 ' + (x.shift ? 'ok' : '')}>{x.shift ? 'Shift open' : 'No shift'}</span>
+            <span className="chip hide9">Today {money(today)}{goal > 0 ? ' · ' + Math.round((today / goal) * 100) + '%' : ''}</span>
+            {bkDue && <button className="chip st warn hide9" onClick={() => { doBackup(); bump((n) => n + 1) }}>Backup due</button>}
             <span className={'chip hide9 ' + (online ? '' : 'bad')}>{online ? 'Online' : 'Offline mode'}</span>
             <button className={'chip st ' + m.level} onClick={() => setModal('data')} aria-label="Storage">Storage {m.pct}%</button>
             <Clock />
@@ -95,6 +115,7 @@ export default function App() {
             <Bell2 go={go} m={m} openData={() => setModal('data')} />
             <button className="btn ib" onClick={toggleFull} aria-label="Fullscreen"><Ic n="expand" /></button>
             <button className="btn ib" onClick={toggleTheme} aria-label="Theme"><Ic n={dark ? 'sun' : 'moon'} /></button>
+            <span className="av" title={curUser().name}>{who}</span>
           </header>
           <StorageStrip m={m} onOpen={() => setModal('data')} />
           <AnimatePresence mode="wait">
@@ -111,7 +132,7 @@ export default function App() {
           </AnimatePresence>
         </div>
       </div>
-      {modal === 'data' && <DataCenter close={() => setModal(null)} />}
+      {modal === 'data' && <DataCenter2 close={() => setModal(null)} />}
       {modal === 'help' && <Help close={() => setModal(null)} />}
       <Toaster />
     </>

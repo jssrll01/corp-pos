@@ -11,6 +11,7 @@ export const applyPrefs = () => {
   const dark = pref('theme', 'light') === 'dark'
   h.dataset.theme = dark ? 'dark' : 'light'
   h.dataset.dens = pref('dens', 'cozy')
+  h.dataset.grid = pref('grid', 'm')
   h.style.setProperty('--ac', pref('ac', '#2563eb'))
   if (dark) h.style.removeProperty('--acs'); else h.style.setProperty('--acs', pref('acs', '#e8efff'))
 }
@@ -42,13 +43,14 @@ export const wakeLock = async (on) => {
 }
 /* ---------- storage ---------- */
 export const LIMIT = 5000000
+export const getLimit = () => num(pref('quota', '5000000')) || 5000000
 export const measure = () => {
   let total = 0, db = 0
   try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); const n = k.length + (localStorage.getItem(k) || '').length; total += n; if (k === 'pos_db') db = n } } catch (e) {}
   const s = getState()
   const img = s.products.reduce((a, p) => a + (p.image ? p.image.length : 0), 0) + (s.settings.logo || '').length
   const old = s.orders.filter((o) => Date.now() - new Date(o.date) > 45 * 864e5).length
-  const pct = Math.min(100, Math.round((total / LIMIT) * 100))
+  const pct = Math.min(100, Math.round((total / getLimit()) * 100))
   const fail = saveFailed()
   const level = fail || pct >= 85 ? 'crit' : pct >= 70 ? 'high' : pct >= 50 || old >= 800 ? 'warn' : 'ok'
   return { total, db, img, pct, level, fail, old }
@@ -138,7 +140,7 @@ export const purgeArchive = (plan) => {
 }
 export const importArchive = (j) => {
   if (!j || j.app !== 'pos-archive' || !j.data) return 'This is not a valid archive file'
-  if (measure().total + JSON.stringify(j.data).length > LIMIT * 0.95) return 'Not enough free space to load this archive. Export and free space first.'
+  if (measure().total + JSON.stringify(j.data).length > getLimit() * 0.95) return 'Not enough free space to load this archive. Export and free space first.'
   const x = getState()
   const add = {}
   let n = 0
@@ -203,7 +205,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<'
 export const receiptText = (o) => {
   const st = getState().settings
   const f = (n) => (st.currency || '') + r2(n).toFixed(2)
-  return [st.name, new Date(o.date).toLocaleString(), 'Order ' + ono(o.no), o.customerName && 'Customer: ' + o.customerName, '', ...o.items.map((i) => i.qty + ' x ' + i.name + '  ' + f(i.qty * i.price - (i.bulk || 0))), '', 'Sub Total ' + f(o.sub), o.disc > 0 && 'Discount -' + f(o.disc), (o.taxName || 'Tax') + ' ' + f(o.tax), 'TOTAL ' + f(o.total), 'Paid ' + f(o.paid ?? o.total), o.balance > 0 && 'Balance ' + f(o.balance), '', st.rcpt && st.rcpt.foot].filter((l) => l !== false && l != null && l !== undefined).join('\n')
+  return [st.name, new Date(o.date).toLocaleString(), 'Order ' + ono(o.no) + (o.otype ? ' - ' + o.otype + (o.table ? ' ' + o.table : '') : ''), o.customerName && 'Customer: ' + o.customerName, '', ...o.items.map((i) => i.qty + ' x ' + i.name + '  ' + f(i.qty * i.price - (i.bulk || 0))), '', 'Sub Total ' + f(o.sub), o.disc > 0 && 'Discount -' + f(o.disc), (o.taxName || 'Tax') + ' ' + f(o.tax), 'TOTAL ' + f(o.total), 'Paid ' + f(o.paid ?? o.total), o.balance > 0 && 'Balance ' + f(o.balance), '', st.rcpt && st.rcpt.foot].filter((l) => l !== false && l != null && l !== undefined).join('\n')
 }
 export const shareText = async (t) => {
   try { if (navigator.share) { await navigator.share({ text: t }); return } } catch (e) { return }
@@ -212,4 +214,16 @@ export const shareText = async (t) => {
 export const kitchenTicket = (cart, no) => {
   const rows = cart.items.map((i) => '<div class="b">' + i.qty + ' x ' + esc(i.name) + '</div>' + (i.note ? '<div>&nbsp;&nbsp;* ' + esc(i.note) + '</div>' : '')).join('')
   printDoc('<div class="c b" style="font-size:16px">KITCHEN</div><div class="c">' + esc(ono(no)) + ' · ' + esc(cart.otype || 'Dine-in') + (cart.table ? ' · ' + esc(cart.table) : '') + '</div><div class="c">' + new Date().toLocaleTimeString() + '</div><hr>' + rows + '<hr>' + (cart.note ? '<div>Note: ' + esc(cart.note) + '</div>' : ''), '58mm auto', 'body{width:58mm;padding:3mm;font:12px/1.4 monospace;color:#000}.c{text-align:center}.b{font-weight:700}hr{border:0;border-top:1px dashed #000}')
+}
+export const probeQuota = () => {
+  const K = 'pos_probe'
+  let used = 0
+  try { localStorage.removeItem(K); for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); used += k.length + (localStorage.getItem(k) || '').length } } catch (e) {}
+  let lo = 0, hi = 25000000
+  const ok = (n) => { try { localStorage.setItem(K, 'x'.repeat(n)); return true } catch (e) { return false } }
+  while (hi - lo > 50000) { const mid = (lo + hi) >> 1; if (ok(mid)) lo = mid; else hi = mid }
+  try { localStorage.removeItem(K) } catch (e) {}
+  const cap = used + lo
+  setPref('quota', cap)
+  return cap
 }

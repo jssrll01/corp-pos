@@ -227,7 +227,7 @@ export default function Cashier() {
           {t.lines.map((i) => (
             <div key={i.id} className="line inset">
               <div className="lname"><b>{i.name}</b><small>{money(i.price)}{i.bulk > 0 ? ' · bulk -' + money(i.bulk) : ''} · <u onClick={() => setEd({ kind: 'price', id: i.id, name: i.name, v: '', pin: '' })}>price</u> · <u onClick={() => setEd({ kind: 'note', id: i.id, name: i.name, v: i.note || '' })}>note</u>{i.note ? ' · ' + i.note : ''}</small></div>
-              <div className="qty"><button className="btn" onClick={() => setQty(i.id, i.qty - 1)}>-</button><span>{i.qty}</span><button className="btn" onClick={() => plus(i)}>+</button></div>
+              <div className="qty"><button className="btn" onClick={() => setQty(i.id, i.qty - 1)}>-</button><span style={{ cursor: 'pointer', minWidth: 22, textAlign: 'center' }} onClick={() => { const v = parseInt(window.prompt('Quantity for ' + i.name, i.qty), 10); if (!(v > 0)) return; const p = products.find((z) => z.id === i.id); if (p && tracked(p) && v > av(p)) return toast('Only ' + av(p) + ' available', 'bad'); setQty(i.id, v) }}>{i.qty}</span><button className="btn" onClick={() => plus(i)}>+</button></div>
               <div className="ltot">{money(i.gross - i.bulk)}</div>
             </div>
           ))}

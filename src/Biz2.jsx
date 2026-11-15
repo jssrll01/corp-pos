@@ -6,7 +6,7 @@ import { money, num, r2, dkey, isLow, qtyAt, tracked, take, mvRow, audit, inR, R
 import { ono, METHODS, MLABEL } from './cart.js'
 import { Tbl, Tabs } from './ui.jsx'
 import { pref, setPref, applyPrefs, PRESETS, measure, LIMIT, planArchive, exportArchive, exportOrdersCsv, purgeArchive, importArchive, getRollup, shrinkImages, healthCheck, voidOrder, settleOrder, toast, doBackup, expiring, wakeLock } from './fx.js'
-const Sh = ({ t, close, children, w = 520 }) => (
+export const Sh = ({ t, close, children, w = 520 }) => (
   <div className="overlay" style={{ zIndex: 9500 }} onClick={close}>
     <div className="modal raised" style={{ width: 'min(94vw,' + w + 'px)', maxWidth: 'none', maxHeight: '94dvh', overflow: 'auto', alignContent: 'start' }} onClick={(e) => e.stopPropagation()}>
       <div className="row2" style={{ alignItems: 'center', flexWrap: 'nowrap' }}><h2>{t}</h2><button className="btn" style={{ flex: 'none' }} onClick={close}>Close</button></div>
@@ -14,7 +14,7 @@ const Sh = ({ t, close, children, w = 520 }) => (
     </div>
   </div>
 )
-const R = ({ a, b, big }) => <div className={'sumline' + (big ? ' big' : '')}><span>{a}</span><span>{b}</span></div>
+export const R = ({ a, b, big }) => <div className={'sumline' + (big ? ' big' : '')}><span>{a}</span><span>{b}</span></div>
 const sum = (a, f) => r2(a.reduce((s, o) => s + num(f(o)), 0))
 const cats = (st) => [...new Set(st.products.map((p) => p.cat).filter(Boolean))]
 
@@ -415,6 +415,7 @@ export function Prefs2({ close }) {
       <button className="btn" onClick={() => set('theme', pref('theme', 'light') === 'light' ? 'dark' : 'light')}>Theme: {pref('theme', 'light')}</button>
       <div className="seg">{[['compact', 'Compact'], ['cozy', 'Normal'], ['large', 'Large touch']].map(([k, l]) => <button key={k} className={'btn' + (pref('dens', 'cozy') === k ? ' on' : '')} onClick={() => set('dens', k)}>{l}</button>)}</div>
       <div className="seg">{PRESETS.map(([n, a, b]) => <button key={n} className={'btn' + (cur === a ? ' on' : '')} onClick={() => { setPref('ac', a); setPref('acs', b); applyPrefs(); f((x) => x + 1) }}><i className="ld" style={{ background: a }} />{n}</button>)}</div>
+      <div className="seg">{[['s', 'Small cards'], ['m', 'Medium cards'], ['l', 'Large cards']].map(([k, l]) => <button key={k} className={'btn' + (pref('grid', 'm') === k ? ' on' : '')} onClick={() => set('grid', k)}>{l}</button>)}</div>
       <button className="btn" onClick={() => set('snd', pref('snd', '1') === '1' ? '0' : '1')}>Beep and vibrate: {pref('snd', '1') === '1' ? 'on' : 'off'}</button>
       <button className="btn" onClick={() => { const v = pref('wake', '1') === '1' ? '0' : '1'; set('wake', v); wakeLock(v === '1') }}>Keep screen on: {pref('wake', '1') === '1' ? 'on' : 'off'}</button>
       <label className="lbl">Daily sales goal<input className="input" type="number" inputMode="decimal" value={pref('goal', '')} onChange={(e) => set('goal', e.target.value)} /></label>
