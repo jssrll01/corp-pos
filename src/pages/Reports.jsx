@@ -1,3 +1,4 @@
+import Sel from '../Sel.jsx'
 import { useState } from 'react'
 import { useStore } from '../store.js'
 import { num, r2, money, dkey, inR, RANGES, qtyAt, tracked } from '../inv.js'
@@ -36,8 +37,8 @@ export default function Reports() {
     <div>
       <Tabs v={t} on={setT} items={TABS} />
       <div className="row2" style={{ marginBottom: 12 }}>
-        <select className="input" value={r} onChange={(e) => setR(e.target.value)}>{RANGES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
-        <select className="input" value={br} onChange={(e) => setBr(e.target.value)}><option value="">All branches</option>{st.branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}</select>
+        <Sel className="input" value={r} onChange={(e) => setR(e.target.value)}>{RANGES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</Sel>
+        <Sel className="input" value={br} onChange={(e) => setBr(e.target.value)}><option value="">All branches</option>{st.branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}</Sel>
       </div>
       <div className="grid">
         {t === 'sales' && <>
@@ -60,7 +61,7 @@ export default function Reports() {
         </>}
         {t === 'emp' && <Tbl name="Employee report" rows={emp} cols={[['Employee', (e) => e.n], ['Sales', (e) => e.c], ['Sales total', (e) => money(e.tot)], ['Average sale', (e) => money(e.c ? e.tot / e.c : 0)], ['Discounts given', (e) => money(e.disc)], ['Hours worked', (e) => e.hrs.toFixed(2)], ['Actions logged', (e) => e.acts]]} />}
         {t === 'audit' && <>
-          <select className="input" value={au} onChange={(e) => setAu(e.target.value)}><option value="">All users</option>{[...new Set(st.audit.map((a) => a.user))].map((u) => <option key={u} value={u}>{u}</option>)}</select>
+          <Sel className="input" value={au} onChange={(e) => setAu(e.target.value)}><option value="">All users</option>{[...new Set(st.audit.map((a) => a.user))].map((u) => <option key={u} value={u}>{u}</option>)}</Sel>
           <Tbl name="Audit log" rows={aud} cols={[['Date', (a) => new Date(a.date).toLocaleString()], ['User', (a) => a.user], ['Action', (a) => a.action], ['Detail', (a) => a.detail]]} />
         </>}
       </div>

@@ -1,3 +1,4 @@
+import Sel from '../Sel.jsx'
 import { useState, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useStore, setState, getState } from '../store.js'
@@ -89,7 +90,7 @@ export default function Cashier() {
     const order = {
       id: uid(), no, date: when,
       items: lines.map((l) => ({ id: l.id, name: l.name, price: l.price, qty: l.qty, bulk: l.bulk, cost: l.cost || 0, sku: l.sku || '', lots: l.lots || [] })),
-      dtype: cart.dtype, dval: num(cart.dval), method: cart.method, received: cart.method === 'cash' ? t.rec : t.paidNow, note: cart.note.trim(),
+      dtype: cart.dtype, dval: num(cart.dval), method: cart.method, received: cart.method === 'cash' ? t.rec : t.paidNow,
       sub: t.sub, disc: t.disc, autoDisc: r2(t.bulk + t.order), manual: t.manual, redeem: t.redeem, pts: t.pts, earned: earn,
       taxPct: settings.tax, taxName: settings.taxName, taxIncl: !!settings.taxIncl, tax: t.tax, total: t.total, net: r2(t.total - t.tax),
       cogs: r2(lines.reduce((a, l) => a + (l.cost || 0) * l.qty, 0)), change: t.change, paid: r2(t.dep + t.paidNow), balance: t.balance, payments: pays,
@@ -104,15 +105,15 @@ export default function Cashier() {
     clearCart(); setOpen(false); setDone(order)
   }
   return (
-    <div>
+    <div className="cashwrap">
       <div className="searchrow">
         <input className="input" placeholder="Search name, SKU or scan barcode" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} inputMode="search" />
         <button className="btn" onClick={() => setScan(true)} aria-label="Scan barcode"><Icon n="camera" /></button>
       </div>
       {scan && <div className="scanfix"><button className="btn scanclose" onClick={() => setScan(false)}><Icon n="close" s={18} /> Close</button><Scanner onClose={() => setScan(false)} onDetect={(c) => { const hit = byCode(String(c).toLowerCase()); if (hit) add(hit); else setQ(c); setScan(false) }} /></div>}
       <div className="row2" style={{ marginTop: 10 }}>
-        <select className="input" value={cart.level} onChange={(e) => setLevel(e.target.value)}><option value="retail">Retail</option>{levels.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}</select>
-        <select className="input" value={cart.customer} onChange={(e) => pickCust(e.target.value)}><option value="">Walk-in</option>{customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
+        <Sel className="input" value={cart.level} onChange={(e) => setLevel(e.target.value)}><option value="retail">Retail</option>{levels.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}</Sel>
+        <Sel className="input" value={cart.customer} onChange={(e) => pickCust(e.target.value)}><option value="">Walk-in</option>{customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</Sel>
       </div>
       <div className="chips"><button className={'btn' + (freq ? ' on' : '')} onClick={() => setFreq(!freq)}>Frequent items</button></div>
       {lowN > 0 && <div className="banner" onClick={() => nav('manage')}>{lowN} product(s) low on stock. Tap to review in Management.</div>}
@@ -121,7 +122,7 @@ export default function Cashier() {
       ) : list.length === 0 ? (
         <p className="mut">No product matches</p>
       ) : (
-        <div className="pgrid">
+        <div className="pgrid cashscroll">
           {list.map((p) => (
             <button key={p.id} className="pcard raised" onClick={() => add(p)}>
               <div className="pimg inset">{p.image ? <img src={p.image} alt="" /> : <span>{p.name.slice(0, 1).toUpperCase()}</span>}</div>
@@ -151,7 +152,7 @@ export default function Cashier() {
               </div>
             ))}
             <div className="row2">
-              <select className="input" value={cart.dtype} onChange={(e) => setCart({ dtype: e.target.value })}><option value="%">Discount %</option><option value="fix">Discount {settings.currency} fixed</option></select>
+              <Sel className="input" value={cart.dtype} onChange={(e) => setCart({ dtype: e.target.value })}><option value="%">Discount %</option><option value="fix">Discount {settings.currency} fixed</option></Sel>
               <input className="input" type="number" inputMode="decimal" min="0" placeholder="0" value={cart.dval} onChange={(e) => setCart({ dval: e.target.value })} />
             </div>
             {L.on && cust && (
@@ -163,7 +164,6 @@ export default function Cashier() {
               <button className="btn" onClick={() => setCart({ received: String(t.due) })}>Exact</button>
             </div>
             {cust && <label className="lbl"><span><input type="checkbox" checked={cart.partial} onChange={(e) => setCart({ partial: e.target.checked })} /> Allow partial payment (balance owed by {cust.name})</span></label>}
-            <textarea className="input" rows="2" placeholder="Note (optional)" value={cart.note} onChange={(e) => setCart({ note: e.target.value })} />
             <div className="sumbox inset">
               <SL a="Sub Total" b={money(t.sub)} />
               {t.applied.map((a, k) => <SL key={k} a={'Discount: ' + a.name} b={'-' + money(a.amt)} />)}

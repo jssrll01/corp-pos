@@ -1,3 +1,4 @@
+import Sel from './Sel.jsx'
 import { useState } from 'react'
 import { useStore, setState } from './store.js'
 import { uid, num, csv, dl, audit } from './inv.js'
@@ -10,7 +11,7 @@ export const Modal = ({ title, onClose, children }) => (
 )
 export const inp = (x, f, set) => {
   const v = f[x.k] ?? ''
-  if (x.t === 'select') return <select className="input" value={v} onChange={(e) => set(x.k, e.target.value)}>{x.o.map(([a, b]) => <option key={a} value={a}>{b}</option>)}</select>
+  if (x.t === 'select') return <Sel className="input" value={v} onChange={(e) => set(x.k, e.target.value)}>{x.o.map(([a, b]) => <option key={a} value={a}>{b}</option>)}</Sel>
   if (x.t === 'check') return <input type="checkbox" checked={!!f[x.k]} onChange={(e) => set(x.k, e.target.checked)} />
   if (x.t === 'area') return <textarea className="input" rows="3" value={v} onChange={(e) => set(x.k, e.target.value)} />
   return <input className="input" type={x.t || 'text'} inputMode={x.t === 'number' ? 'decimal' : undefined} value={v} onChange={(e) => set(x.k, e.target.value)} />

@@ -96,6 +96,7 @@ function Products() {
           <button className="btn pri" onClick={submit}>{f.id ? 'Save Changes' : 'Add Product'}</button>
         </div>
       </div>
+      <div className="cashscroll plist">
       {products.length === 0 && <p className="mut">No products yet</p>}
       <AnimatePresence initial={false}>
         {products.map((p) => (
@@ -107,6 +108,7 @@ function Products() {
           </motion.div>
         ))}
       </AnimatePresence>
+      </div>
     </div>
   )
 }

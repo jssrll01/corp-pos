@@ -1,3 +1,4 @@
+import Sel from '../Sel.jsx'
 import { useMemo, useState } from 'react'
 import { useStore } from '../store.js'
 import { num, r2, money, dkey, isLow } from '../inv.js'
@@ -113,7 +114,7 @@ export default function Dash() {
   const prodRows = Object.entries(D.prod).sort((a, b) => b[1].rev - a[1].rev)
   return (
     <div className="grid">
-      <select className="input" value={days} onChange={(e) => setDays(+e.target.value)}>{[[7, 'Last 7 days'], [14, 'Last 14 days'], [30, 'Last 30 days'], [90, 'Last 90 days']].map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+      <Sel className="input" value={days} onChange={(e) => setDays(+e.target.value)}>{[[7, 'Last 7 days'], [14, 'Last 14 days'], [30, 'Last 30 days'], [90, 'Last 90 days']].map(([k, l]) => <option key={k} value={k}>{l}</option>)}</Sel>
       <div className="kgrid">{kpis.map(([l, v]) => <div key={l} className="raised stat"><small>{l}</small><b>{v}</b></div>)}</div>
       <div className="dgrid">
         <Card t="Revenue, expenses and profit">

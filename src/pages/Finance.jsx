@@ -1,3 +1,4 @@
+import Sel from '../Sel.jsx'
 import { useState } from 'react'
 import { useStore, setState } from '../store.js'
 import { uid, num, r2, money, dkey, audit, inR, RANGES, curUser } from '../inv.js'
@@ -19,7 +20,7 @@ function Cash() {
   const out = E.filter((e) => e.a < 0).reduce((a, e) => a - e.a, 0)
   return (
     <div className="grid">
-      <select className="input" value={r} onChange={(e) => setR(e.target.value)}>{RANGES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+      <Sel className="input" value={r} onChange={(e) => setR(e.target.value)}>{RANGES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</Sel>
       <div className="ostats3">
         <div className="raised stat"><small>Cash in</small><b>{money(inn)}</b></div>
         <div className="raised stat"><small>Cash out</small><b>{money(out)}</b></div>

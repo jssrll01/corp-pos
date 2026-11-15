@@ -1,3 +1,4 @@
+import Sel from '../Sel.jsx'
 import { useEffect, useState } from 'react'
 import { useStore } from '../store.js'
 import { isLow, curUser, audit } from '../inv.js'
@@ -21,5 +22,5 @@ export function UserSwitch() {
     audit('User switched', e ? e.name : 'Admin')
     force((n) => n + 1)
   }
-  return <select className="input" value={curUser().id} onChange={(e) => pick(e.target.value)}><option value="">Admin</option>{emps.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}</select>
+  return <Sel className="input" value={curUser().id} onChange={(e) => pick(e.target.value)}><option value="">Admin</option>{emps.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}</Sel>
 }

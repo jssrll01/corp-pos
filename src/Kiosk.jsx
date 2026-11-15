@@ -25,8 +25,6 @@ export default function Kiosk() {
   useEffect(() => {
     const f = () => { if (isFs()) lock(); fit() }
     const cm = (e) => e.preventDefault()
-    document.addEventListener('click', go, true)
-    document.addEventListener('touchend', go, true)
     document.addEventListener('fullscreenchange', f)
     document.addEventListener('webkitfullscreenchange', f)
     document.addEventListener('contextmenu', cm)
@@ -34,8 +32,6 @@ export default function Kiosk() {
     window.addEventListener('orientationchange', fit)
     lock(); fit()
     return () => {
-      document.removeEventListener('click', go, true)
-      document.removeEventListener('touchend', go, true)
       document.removeEventListener('fullscreenchange', f)
       document.removeEventListener('webkitfullscreenchange', f)
       document.removeEventListener('contextmenu', cm)

@@ -175,3 +175,34 @@ html,body{overscroll-behavior:none}
 .dl{display:grid;gap:4px;font-size:12px}
 .dl i,.ld{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
 .lg{display:flex;gap:12px;font-size:12px;flex-wrap:wrap}
+/* b16 */
+html,body,#root{height:100%;overflow:hidden}
+.input,.btn,.selb{height:34px;min-height:0;padding:0 12px;font-size:14px;border-radius:12px}
+h2{font-size:16px;margin:0 0 6px}
+.mpanel,.raised{padding:10px}
+.grid{gap:8px}
+.modal{max-height:100%;overflow:hidden}
+.sel{position:relative}
+.selb{width:100%;display:flex;align-items:center;justify-content:space-between;text-align:left;background:#fff;border:1px solid #d0d7e3}
+.sell{position:absolute;left:0;right:0;top:100%;margin-top:4px;z-index:9000;background:#fff;border:1px solid #d0d7e3;border-radius:12px;max-height:40vh;overflow:auto;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.selo{padding:9px 12px;font-size:14px}
+.selo.on{background:#eef2ff;font-weight:700}
+/* b17 */
+.page{height:calc(100% - 56px);overflow:hidden;padding:8px}
+.page .grid{height:100%;overflow:hidden;align-content:start}
+.cashscroll{overflow:auto}
+/* b18 */
+.grid:has(>.plist){grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:8px;align-items:start}
+.plist{height:100%;max-height:calc(100dvh - 72px);overflow:auto;display:grid;gap:6px;align-content:start}
+.grid:has(>.plist)>.raised{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;align-content:start;max-height:calc(100dvh - 72px);overflow:auto}
+.grid:has(>.plist)>.raised>h3,.grid:has(>.plist)>.raised>small{grid-column:1/-1}
+.grid:has(>.plist)>.raised>input.input{grid-column:span 4}
+.grid:has(>.plist)>.raised .row2{display:contents}
+.grid:has(>.plist)>.raised .thumb{height:34px}
+.prow{padding:6px 10px}
+/* b19 */
+.cashwrap{height:100%;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.cashwrap>.pgrid{flex:1;min-height:0;overflow:auto;padding-bottom:64px}
+.cartbar{position:fixed;bottom:8px;left:8px;right:8px}
+.sheet{max-height:100%;overflow:auto}
+.pgrid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}

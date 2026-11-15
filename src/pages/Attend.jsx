@@ -1,3 +1,4 @@
+import Sel from '../Sel.jsx'
 import { useState } from 'react'
 import { useStore, setState } from '../store.js'
 import { uid, dkey, audit } from '../inv.js'
@@ -24,7 +25,7 @@ export default function Attend() {
     <div className="grid" style={{ marginTop: 12 }}>
       <div className="raised mpanel">
         <h3 style={{ margin: 0 }}>Time clock</h3>
-        <select className="input" value={id} onChange={(x) => setId(x.target.value)}><option value="">Select employee</option>{st.employees.filter((x) => x.active !== false).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select>
+        <Sel className="input" value={id} onChange={(x) => setId(x.target.value)}><option value="">Select employee</option>{st.employees.filter((x) => x.active !== false).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</Sel>
         {e && e.pin && <input className="input" type="password" inputMode="numeric" placeholder="Employee PIN" value={pin} onChange={(x) => setPin(x.target.value)} />}
         {e && <button className="btn pri" onClick={act}>{open ? 'Clock out' : 'Clock in'}</button>}
         {e && <small className="mut">{open ? 'Clocked in since ' + tm(open.in) : 'Not clocked in'}</small>}

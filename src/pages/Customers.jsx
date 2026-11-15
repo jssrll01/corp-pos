@@ -1,3 +1,4 @@
+import Sel from '../Sel.jsx'
 import { useState } from 'react'
 import { useStore } from '../store.js'
 import { money } from '../inv.js'
@@ -15,7 +16,7 @@ function Insight() {
     <div className="grid">
       <div className="raised mpanel">
         <h3 style={{ margin: 0 }}>Purchase history</h3>
-        <select className="input" value={id} onChange={(e) => setId(e.target.value)}><option value="">Select customer</option>{st.customers.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select>
+        <Sel className="input" value={id} onChange={(e) => setId(e.target.value)}><option value="">Select customer</option>{st.customers.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</Sel>
         {c && <small className="mut">{c.points || 0} points · spent {money(os.reduce((a, o) => a + o.total, 0))} · owes {money(os.reduce((a, o) => a + (o.balance || 0), 0))}</small>}
         {c && <b>Frequently bought</b>}
         {c && !top.length && <small className="mut">No purchases yet</small>}

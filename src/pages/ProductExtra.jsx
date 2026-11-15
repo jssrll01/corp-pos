@@ -1,3 +1,4 @@
+import Sel from '../Sel.jsx'
 import { useStore, getState } from '../store.js'
 import { MAIN, num, tracked, qtyAt, put, take, mvRow, logMoves, audit } from '../inv.js'
 import { Fld } from '../ui.jsx'
@@ -31,7 +32,7 @@ export default function ProductExtra({ f, setF }) {
       </div>
       <div className="row2">
         <input className="input" placeholder="Category" value={f.cat} onChange={(e) => set('cat', e.target.value)} />
-        <select className="input" value={f.trk} onChange={(e) => set('trk', e.target.value)}><option value="none">No batch or serial</option><option value="batch">Batch / lot</option><option value="serial">Serial number</option></select>
+        <Sel className="input" value={f.trk} onChange={(e) => set('trk', e.target.value)}><option value="none">No batch or serial</option><option value="batch">Batch / lot</option><option value="serial">Serial number</option></Sel>
       </div>
       {levels.map((l) => <input key={l.id} className="input" type="number" inputMode="decimal" min="0" placeholder={l.name + ' price (blank = retail)'} value={f.prices[l.id] || ''} onChange={(e) => setF((x) => ({ ...x, prices: { ...x.prices, [l.id]: e.target.value } }))} />)}
       <div className="row2">

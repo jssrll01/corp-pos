@@ -1,3 +1,4 @@
+import Sel from '../Sel.jsx'
 import { useState } from 'react'
 import { useStore } from '../store.js'
 import { inR, RANGES } from '../inv.js'
@@ -9,7 +10,7 @@ function Time() {
   const rows = st.attendance.filter((a) => inR(a.in, r))
   return (
     <div className="grid">
-      <select className="input" value={r} onChange={(e) => setR(e.target.value)}>{RANGES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+      <Sel className="input" value={r} onChange={(e) => setR(e.target.value)}>{RANGES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</Sel>
       <Tbl name="Time attendance" rows={rows} cols={[['Date', (a) => a.date], ['Employee', (a) => a.name], ['In', (a) => new Date(a.in).toLocaleTimeString()], ['Out', (a) => (a.out ? new Date(a.out).toLocaleTimeString() : '')], ['Hours', hrs]]} />
       <small className="mut">Total hours: {rows.reduce((a, x) => a + (x.out ? (new Date(x.out) - new Date(x.in)) / 36e5 : 0), 0).toFixed(2)}</small>
     </div>

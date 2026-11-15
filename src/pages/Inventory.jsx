@@ -1,3 +1,4 @@
+import Sel from '../Sel.jsx'
 import { useState } from 'react'
 import { useStore, setState } from '../store.js'
 import { uid, num, r2, money, dkey, tracked, qtyAt, isLow, lotsOf, withLots, take, put, mvRow, curUser, audit, inR, RANGES } from '../inv.js'
@@ -6,11 +7,11 @@ import { printLabels } from '../barcode.js'
 const wn = (st, id) => (st.warehouses.find((w) => w.id === id) || {}).name || id
 function WhSel({ v, on, all }) {
   const { warehouses } = useStore()
-  return <select className="input" value={v} onChange={(e) => on(e.target.value)}>{all && <option value="">All warehouses</option>}{warehouses.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}</select>
+  return <Sel className="input" value={v} onChange={(e) => on(e.target.value)}>{all && <option value="">All warehouses</option>}{warehouses.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}</Sel>
 }
 function PSel({ v, on }) {
   const { products } = useStore()
-  return <select className="input" value={v} onChange={(e) => on(e.target.value)}><option value="">Select product</option>{products.map((p) => <option key={p.id} value={p.id}>{p.name}{p.sku ? ' (' + p.sku + ')' : ''}</option>)}</select>
+  return <Sel className="input" value={v} onChange={(e) => on(e.target.value)}><option value="">Select product</option>{products.map((p) => <option key={p.id} value={p.id}>{p.name}{p.sku ? ' (' + p.sku + ')' : ''}</option>)}</Sel>
 }
 function Stock() {
   const st = useStore()
@@ -53,7 +54,7 @@ function Adjust() {
     <div className="raised mpanel">
       <PSel v={f.pid} on={(v) => set('pid', v)} />
       <WhSel v={f.wh} on={(v) => set('wh', v)} />
-      <select className="input" value={f.typ} onChange={(e) => set('typ', e.target.value)}><option value="add">Stock in (add)</option><option value="remove">Remove (correction)</option><option value="damaged">Damaged</option><option value="expired">Expired</option></select>
+      <Sel className="input" value={f.typ} onChange={(e) => set('typ', e.target.value)}><option value="add">Stock in (add)</option><option value="remove">Remove (correction)</option><option value="damaged">Damaged</option><option value="expired">Expired</option></Sel>
       <input className="input" type="number" inputMode="numeric" min="1" placeholder="Quantity" value={f.qty} onChange={(e) => set('qty', e.target.value)} />
       {f.typ === 'add' && <div className="row2"><input className="input" placeholder="Batch no" value={f.batch} onChange={(e) => set('batch', e.target.value)} /><Fld l="Expiry"><input className="input" type="date" value={f.exp} onChange={(e) => set('exp', e.target.value)} /></Fld></div>}
       <input className="input" placeholder="Note / reason" value={f.note} onChange={(e) => set('note', e.target.value)} />
@@ -111,7 +112,7 @@ function Receive() {
     <div className="grid">
       <div className="raised mpanel">
         <h3 style={{ margin: 0 }}>Receive stock (purchase)</h3>
-        <select className="input" value={h.sup} onChange={(e) => hs('sup', e.target.value)}><option value="">No supplier</option>{st.suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
+        <Sel className="input" value={h.sup} onChange={(e) => hs('sup', e.target.value)}><option value="">No supplier</option>{st.suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</Sel>
         <div className="row2"><WhSel v={h.wh} on={(v) => hs('wh', v)} /><input className="input" placeholder="Invoice / ref no" value={h.ref} onChange={(e) => hs('ref', e.target.value)} /></div>
         <PSel v={d.pid} on={(v) => ds('pid', v)} />
         <div className="row2"><input className="input" type="number" inputMode="numeric" placeholder="Qty" value={d.qty} onChange={(e) => ds('qty', e.target.value)} /><input className="input" type="number" inputMode="decimal" placeholder="Unit cost" value={d.cost} onChange={(e) => ds('cost', e.target.value)} /></div>
@@ -119,7 +120,7 @@ function Receive() {
         <textarea className="input" rows="2" placeholder="Serial numbers (one per line or comma separated, sets the quantity)" value={d.ser} onChange={(e) => ds('ser', e.target.value)} />
         <button className="btn" onClick={addL}>Add line</button>
         {ln.map((l, i) => <div key={i} className="sumline"><span>{l.qty} x {l.name}{l.no ? ' [' + l.no + ']' : ''}{l.sers.length ? ' (serials)' : ''}</span><span>{money(l.qty * l.cost)}</span></div>)}
-        <div className="row2"><input className="input" type="number" inputMode="decimal" placeholder={'Paid now (blank = ' + money(total) + ')'} value={h.paid} onChange={(e) => hs('paid', e.target.value)} /><select className="input" value={h.method} onChange={(e) => hs('method', e.target.value)}><option value="cash">Cash</option><option value="ewallet">E-Wallet</option><option value="bank">Bank</option></select></div>
+        <div className="row2"><input className="input" type="number" inputMode="decimal" placeholder={'Paid now (blank = ' + money(total) + ')'} value={h.paid} onChange={(e) => hs('paid', e.target.value)} /><Sel className="input" value={h.method} onChange={(e) => hs('method', e.target.value)}><option value="cash">Cash</option><option value="ewallet">E-Wallet</option><option value="bank">Bank</option></Sel></div>
         {msg && <small className="mut">{msg}</small>}
         <button className="btn pri" onClick={save}>Save purchase {ln.length ? '(' + money(total) + ')' : ''}</button>
       </div>
@@ -168,7 +169,7 @@ function Transfer() {
     <div className="grid">
       <div className="raised mpanel">
         <h3 style={{ margin: 0 }}>New stock transfer</h3>
-        <div className="row2"><WhSel v={h.from} on={(v) => setH({ ...h, from: v })} /><select className="input" value={h.to} onChange={(e) => setH({ ...h, to: e.target.value })}><option value="">To warehouse</option>{st.warehouses.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}</select></div>
+        <div className="row2"><WhSel v={h.from} on={(v) => setH({ ...h, from: v })} /><Sel className="input" value={h.to} onChange={(e) => setH({ ...h, to: e.target.value })}><option value="">To warehouse</option>{st.warehouses.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}</Sel></div>
         <PSel v={d.pid} on={(v) => setD({ ...d, pid: v })} />
         <input className="input" type="number" inputMode="numeric" placeholder="Quantity" value={d.qty} onChange={(e) => setD({ ...d, qty: e.target.value })} />
         <button className="btn" onClick={addL}>Add line</button>
@@ -257,7 +258,7 @@ function History() {
   const loss = st.moves.filter((m) => (m.type === 'damaged' || m.type === 'expired') && inR(m.date, r)).reduce((a, m) => a + Math.abs(m.qty) * num(m.cost), 0)
   return (
     <div className="grid">
-      <select className="input" value={r} onChange={(e) => setR(e.target.value)}>{RANGES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+      <Sel className="input" value={r} onChange={(e) => setR(e.target.value)}>{RANGES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</Sel>
       <div className="chips">{types.map((k) => <button key={k} className={'btn' + (ty === k ? ' on' : '')} onClick={() => setTy(k)}>{k}</button>)}</div>
       <small className="mut">Damaged and expired loss at cost in this period: {money(loss)}</small>
       <Tbl name="Stock movements" rows={rows} cols={[['Date', (m) => new Date(m.date).toLocaleString()], ['Type', (m) => m.type], ['Product', (m) => m.name], ['Warehouse', (m) => wn(st, m.wh)], ['Qty', (m) => m.qty], ['Cost value', (m) => money(Math.abs(m.qty) * num(m.cost))], ['User', (m) => m.user], ['Note', (m) => m.note]]} />
@@ -276,7 +277,7 @@ function Labels() {
   }
   return (
     <div className="grid">
-      <select className="input" value={mode} onChange={(e) => setMode(e.target.value)}><option value="a4">A4 sheet (50x30mm labels)</option><option value="50x30">Label roll 50x30mm</option><option value="40x25">Label roll 40x25mm</option></select>
+      <Sel className="input" value={mode} onChange={(e) => setMode(e.target.value)}><option value="a4">A4 sheet (50x30mm labels)</option><option value="50x30">Label roll 50x30mm</option><option value="40x25">Label roll 40x25mm</option></Sel>
       <label className="lbl"><span><input type="checkbox" checked={pr} onChange={(e) => setPr(e.target.checked)} /> Show price</span></label>
       {st.products.map((p) => (
         <div key={p.id} className="raised prow">
